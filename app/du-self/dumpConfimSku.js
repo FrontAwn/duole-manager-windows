@@ -13,7 +13,7 @@ const getAlreadyDumpConfimProductIds = async ()=>{
 }
 
 const setConfimProductDetail = async urls=>{
-
+	
 }
 
 ;(async ()=>{

@@ -3,13 +3,13 @@ const KoaRouter = require("koa-router")
 const database = require("./utils/database.js")
 const model = require("./utils/model.js")
 const common = require("./utils/common.js")
-const DuappResourceRemote = database["DuappResourceRemote"]
-const NikeProductListRemote = model.getNikeProductListModel("remote")
-const SelfProductListRemote = model.getSelfProductListModel("remote")
+const DuappResource = database.getDuappResource()
+const NikeProductList = model.getNikeProductList()
+const SelfProductList = model.getSelfProductList()
 var router = new KoaRouter()
 
 router.get("/du/self/getConfimProductIds",async ctx=>{
-	let res = await SelfProductListRemote.findAll({
+	let res = await SelfProductList.findAll({
 		raw:true,
 		attributes:["product_id"],
 		where:{
@@ -25,7 +25,7 @@ router.get("/du/self/getConfimProductIds",async ctx=>{
 })
 
 router.get("/du/self/getConfimProductUrls",async ctx=>{
-	let res = await SelfProductListRemote.findAll({
+	let res = await SelfProductList.findAll({
 		raw:true,
 		attributes:["url"],
 		where:{
@@ -44,7 +44,7 @@ router.get("/du/self/getConfimProductUrls",async ctx=>{
 
 
 router.get("/du/self/getAlreadyDumpConfimProductIds",async ctx=>{
-	
+
 })
 
 router.get("/du/self/setConfimProductUrl",async ctx=>{
@@ -55,8 +55,8 @@ router.get("/du/self/setConfimProductUrl",async ctx=>{
 	let res = {
 		"url":url
 	}
-	await DuappResourceRemote.transaction(async t=>{
-		await SelfProductListRemote.update(res,{
+	await DuappResource.transaction(async t=>{
+		await SelfProductList.update(res,{
 			where:{
 				"product_id":productId
 			},

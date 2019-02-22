@@ -1,4 +1,4 @@
-const Servers = {
+const serverConfig = {
 	"DuoleManagerServer":{
 		"remoteIp":"http://192.168.1.121:8101",
 		"remoteHost":"http://mc.tiangoutech.com:8101",
@@ -7,4 +7,4 @@ const Servers = {
 	}
 }
 
-module.exports = Servers
+module.exports = serverConfig

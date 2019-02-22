@@ -1,3 +1,6 @@
+const localHost = "192.168.1.96"
+const remoteHost = "192.168.1.121"
+
 const mysqlConfig = {
 	"DuappResource":{
 		"local":{
@@ -5,7 +8,7 @@ const mysqlConfig = {
 			'username':'root',
 			'password':'123456',
 			'extra':{
-				'host':'192.168.1.96',
+				'host':localHost,
 				'dialect':'mysql',
 				'pool': {
 				    max: 5,
@@ -20,7 +23,7 @@ const mysqlConfig = {
 			'username':'song',
 			'password':'SongAbc12345',
 			'extra':{
-				'host':'192.168.1.121',
+				'host':remoteHost,
 				'dialect':'mysql',
 				'pool': {
 				    max: 5,
@@ -37,7 +40,7 @@ const mysqlConfig = {
 			'username':'root',
 			'password':'123456',
 			'extra':{
-				'host':'192.168.1.96',
+				'host':localHost,
 				'dialect':'mysql',
 				'pool': {
 				    max: 5,
@@ -52,7 +55,7 @@ const mysqlConfig = {
 			'username':'song',
 			'password':'SongAbc12345',
 			'extra':{
-				'host':'192.168.1.121',
+				'host':remoteHost,
 				'dialect':'mysql',
 				'pool': {
 				    max: 5,
