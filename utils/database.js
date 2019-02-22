@@ -1,20 +1,20 @@
 const sequelize = require("sequelize")
 const mysqlConfig = require("../config/mysql.config.js")
-const env = mysqlConfig["env"]
+const mysqlEnv = require("../config/env.config.js")["mysqlEnv"]
 exports.getDuappResource = ()=>{
 	return new sequelize(
-		mysqlConfig['DuappResource'][env]['database'],
-		mysqlConfig['DuappResource'][env]['username'],
-		mysqlConfig['DuappResource'][env]['password'],
-		mysqlConfig['DuappResource'][env]['extra'],
+		mysqlConfig['DuappResource'][mysqlEnv]['database'],
+		mysqlConfig['DuappResource'][mysqlEnv]['username'],
+		mysqlConfig['DuappResource'][mysqlEnv]['password'],
+		mysqlConfig['DuappResource'][mysqlEnv]['extra'],
 	)
 }
 
 exports.getSjResource = ()=>{
 	return new sequelize(
-		mysqlConfig['SjResource'][env]['database'],
-		mysqlConfig['SjResource'][env]['username'],
-		mysqlConfig['SjResource'][env]['password'],
-		mysqlConfig['SjResource'][env]['extra'],
+		mysqlConfig['SjResource'][mysqlEnv]['database'],
+		mysqlConfig['SjResource'][mysqlEnv]['username'],
+		mysqlConfig['SjResource'][mysqlEnv]['password'],
+		mysqlConfig['SjResource'][mysqlEnv]['extra'],
 	)
 }
