@@ -6,7 +6,7 @@ const SjResource = databases.getSjResource()
 const NikeProductList = DuappResource.define(
 	modelConfig['NikeProductList']['tableName'],
 	modelConfig['NikeProductList']['structure'],
-	modelConfig['NikeProductList']['extra'],
+	modelConfig['NikeProductList']['extra'],  
 )
 
 const SelfProductList = DuappResource.define(
@@ -27,10 +27,15 @@ const DuSkuDetail = SjResource.define(
 	modelConfig['DuSkuDetail']['extra'],
 )
 
+const SelfProductDetailTotal = DuappResource.define(
+	modelConfig['SelfProductDetailTotal']['tableName'],
+	modelConfig['SelfProductDetailTotal']['structure'],
+	modelConfig['SelfProductDetailTotal']['extra'],  
+)
+
 exports.getNikeProductList = ()=>{
 	return NikeProductList
 }
-
 
 exports.getSelfProductList = ()=>{
 	return SelfProductList
@@ -42,4 +47,8 @@ exports.getDuSkuList = ()=>{
 
 exports.getDuSkuDetail = ()=>{
 	return DuSkuDetail
+}
+
+exports.getSelfProductDetailTotal = ()=>{
+	return SelfProductDetailTotal
 }
