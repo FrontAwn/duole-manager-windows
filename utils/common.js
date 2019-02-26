@@ -54,3 +54,7 @@ exports.httpGet = url=>{
 	})
 }
 
+exports.deepCopy = obj =>{
+	return JSON.parse(JSON.stringify(obj))
+}
+

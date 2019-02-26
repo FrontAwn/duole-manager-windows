@@ -1,3 +1,3 @@
 module.exports = {
-	mysqlEnv:"remote"
+	mysqlEnv:"local"
 }
