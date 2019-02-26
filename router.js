@@ -25,6 +25,21 @@ router.get("/du/self/getConfimProductIds",async ctx=>{
 	ctx.body = productIds
 })
 
+router.get("/du/self/getNewProductIds",async ctx=>{
+	let res = await SelfProductList.findAll({
+		raw:true,
+		attributes:["product_id"],
+		where:{
+			type:0,
+		}
+	})
+	let productIds = []
+	res.forEach(content=>{
+		productIds.push(content['product_id'])
+	})
+	ctx.body = productIds
+})
+
 // 获得当前可以抓取货号的urls
 router.get("/du/self/getConfimProductUrls",async ctx=>{
 	let res = await SelfProductList.findAll({
@@ -51,7 +66,8 @@ router.get("/du/self/putConfimProductUrl",async ctx=>{
 	let query = common.qsParse(urlObject['query'])
 	let productId = query['productId']
 	let res = {
-		"url":url
+		"url":url,
+		"type":2
 	}
 	await DuappResource.transaction(async t=>{
 		await SelfProductList.update(res,{
@@ -112,13 +128,13 @@ router.get("/du/self/getProductList",async ctx=>{
 // 自定义搜索detail
 router.get("/du/self/getProductDetails",async ctx=>{
 	let query = ctx.query
-	let where = JSON.parse(query['where']) || {
+	let where = query['where'] ? JSON.parse(query['where']) : {
 		id:{
 			"$gt":0
 		}
 	}
-	let attrs = JSON.parse(query["attrs"]) || ["*"]
-	let order = JSON.parse(query["order"]) || []
+	let attrs = query["attrs"] ? JSON.parse(query["attrs"]) : ["*"]
+	let order = query["order"] ? JSON.parse(query["order"]) : []
 	let res = await SelfProductDetailTotal.findAll({
 		where,
 		attributes:attrs,
