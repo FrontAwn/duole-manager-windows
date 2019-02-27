@@ -142,6 +142,7 @@ router.get("/du/self/getProductDetails",async ctx=>{
 		raw:true
 	})
 	ctx.body = res
+	
 })
 
 
