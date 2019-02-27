@@ -3,6 +3,7 @@ const path = require("path")
 const util = require("util")
 const url = require("url")
 const http = require("http")
+const https = require("https")
 const qs = require("querystring")
 const child_process = require("child_process")
 
@@ -32,6 +33,18 @@ exports.checkFile = filePath=>{
 	})
 }
 
+exports.readDirectory = directoryPath=>{
+	return new Promise((resolve,reject)=>{
+		fs.readdir(directoryPath,(err,files)=>{
+			if (!err) {
+				resolve(files)
+			} else {
+				resolve(null)
+			}
+		})
+	})
+}
+
 exports.awaitTime = time=>{
 	return new Promise((resolve,reject)=>{
 		setTimeout(()=>{
@@ -43,6 +56,20 @@ exports.awaitTime = time=>{
 exports.httpGet = url=>{
 	return new Promise((resolve,reject)=>{
 		http.get(url,res=>{
+			let datas = ""
+			res.on("data",chunk=>{
+				datas += chunk
+			})
+			res.on("end",()=>{
+				resolve(datas)
+			})
+		})
+	})
+}
+
+exports.httpsGet = url=>{
+	return new Promise((resolve,reject)=>{
+		https.get(url,res=>{
 			let datas = ""
 			res.on("data",chunk=>{
 				datas += chunk

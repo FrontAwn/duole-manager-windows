@@ -1,35 +1,79 @@
 const moment = require("moment")
 const path = require("path")
 const Request = require("../../utils/request.js")
+const Response = require("../../utils/response.js")
 const Common = require("../../utils/common.js")
 const readline = require("readline")
 
 var productIds = []
+const alreadDumpIdsJsonPath = path.resolve(__dirname,"json/alreadyDumpIds.json")
+
+const checkHasNewSkus = async ()=>{
+	let where = {
+		type:0
+	}
+	let attrs = ["sku"]
+	let res = await Request({
+		url:"/du/self/getProductList",
+		data:{
+			where:JSON.stringify(where),
+			attrs:JSON.stringify(attrs)
+		}
+	})
+	let datas = res["data"]
+	if ( datas && datas.length > 0 ) {
+		console.log(`[Warning]: 当前有${datas.length}个新货号需要处理，请先处理新货号`)
+		process.exit(1)
+	}
+}
 
 const getConfimProductUrls = async ()=>{
+	let where = {
+		type:2,
+		url:{
+			"$ne":""
+		}
+	}
+	let attrs = ["url"]
 	let res = await Request({
-		url:"/du/self/getConfimProductUrls"
+		url:"/du/self/getProductList",
+		data:{
+			where:JSON.stringify(where),
+			attrs:JSON.stringify(attrs)
+		}
 	})
-	return res['data'];
+	let urls = []
+	res['data'].forEach(content=>{
+		urls.push(content.url)
+	})
+	return urls;
 }
 
 const getConfimProductIds = async ()=>{
+	let where = {
+		type:2,
+	}
+	let attrs = ['product_id']
 	let res = await Request({
-		url:"/du/self/getConfimProductIds"
+		url:"/du/self/getProductList",
+		data:{
+			where:JSON.stringify(where),
+			attrs:JSON.stringify(attrs)
+		}
 	})
-	return res["data"]
+	let ids = []
+	res['data'].forEach(content=>{
+		ids.push(content['product_id'])
+	})
+	return ids
 }
 
 const writeAlreadyDumpIds = async ids=>{
-	await Common.writeFile(path.resolve(
-		__dirname,"context/alreadyDumpDetailProductIds.json"),
-		ids
-	)
+	await Common.writeFile(alreadDumpIdsJsonPath,ids)
 }
 
 const readAlreadyDumpIds = async ()=>{
-	let productIds = await Common.readFile(path.resolve(
-		__dirname,"context/alreadyDumpDetailProductIds.json"))
+	let productIds = await Common.readFile(alreadDumpIdsJsonPath)
 	return JSON.parse(productIds.toString())
 }
 
@@ -79,41 +123,10 @@ const putProductDetails = async urls =>{
 	let currentIdx = 0
 	for ( let [productId,url] of Object.entries(urls) ) {
 		let response = await Common.httpGet(url)
-		response = JSON.parse(response)
-		if ( response["status"] != 200 ) continue
-		let datas = response["data"]
-		let detail = {}
-		let sku = datas["detail"]["articleNumber"].toString().toUpperCase().trim()
-		if ( sku.indexOf(' ') !== -1 ) {
-			sku.replace(' ','-')
-		}
-
-		let price = "--"
-		if ( datas["item"]["price"] && typeof parseInt(datas["item"]["price"]) === "number" ) {
-			price = parseInt(datas["item"]["price"]) / 100
-		}
-
-		let sizeList = {}
-		datas["sizeList"].forEach(sizeDetail=>{
-			let size = sizeDetail["size"]
-			let sizePrice = "--"
-			if ( sizeDetail["item"] && !Array.isArray(sizeDetail["item"]) && sizeDetail["item"]["price"] ) {
-				sizePrice = parseInt(sizeDetail["item"]["price"]) / 100
-			}
-			sizeList[size] = sizePrice
-		})
-
-		detail["sku"] = sku
-		detail["item_id"] = datas["item"]["productItemId"]
-		detail["price"] = price
-		detail["product_id"] = productId
-		detail["title"] = datas["detail"]["title"]
-		detail["size_list"] = JSON.stringify(sizeList)
-		detail["sold_total"] = datas["detail"]["soldNum"]
-		detail["sell_date"] = datas["detail"]["sellDate"]
-		detail["create_at"] = moment().format("YYYY-MM-DD")
+		let detail = Response.parseProductDetail(response)
+		if ( detail === null ) continue
 		await Request({
-			url:"/du/self/putProductDetail",
+			url:"/du/self/putConfimSkuDetail",
 			data:{
 				detail:JSON.stringify(detail),
 			}
@@ -128,6 +141,7 @@ const putProductDetails = async urls =>{
 
 
 ;(async ()=>{
+	await checkHasNewSkus()
 	let confimProductUrls = await getConfimProductUrls()
 	let confimProductIds = await getConfimProductIds()
 	let alreadyDumpProductIds = await readAlreadyDumpIds()
