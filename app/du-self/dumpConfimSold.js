@@ -11,18 +11,38 @@ const ruleDetailJson = path.resolve(__dirname,"./json/ruleDetail.json")
 const ruleSoldJson = path.resolve(__dirname,"./json/ruleSold.json")
 
 var confimProducts = null
-var confimProductIds = 0
-
+var confimProductIdx = 800
 const watchRuleListCallback = async (currStat,prevStat) => {
-	console.log("list")
+	let ruleListContent = await common.readFile(ruleListJson)
+	let list = response.parseProductList(ruleListContent.toString())
+	let currentProduct = getCurrentProduct()
+	let currentProductId = currentProduct["product_id"]
+	let detailOffset = null
+	if ( list.length > 0 ) {
+		list.forEach((product,idx)=>{
+			if ( product["productId"] == currentProductId ) {
+				detailOffset = idx + 1
+			}
+		})
+	}
+	if ( detailOffset !== null ) {
+		await robot.clickDetail(detailOffset)
+	} else {
+		await cleanSku()
+		confimProductIdx += 1
+		await common.awaitTime(500)
+		await searchSku()
+	}
 }
 
 const watchRuleDetailCallback = async (currStat,prevStat) => {
-	console.log("detail")
+	await robot.clickTotalSold()
 }
 
 const watchRuleSoldCallback = async (currStat,prevStat) => {
-	console.log("sold")
+	let ruleSoldContent = await common.readFile(ruleSoldJson)
+	let soldList = response.parseProductSold(ruleSoldContent.toString())
+	console.log(soldList)
 }
 
 const getConfimProducts = async ()=>{
@@ -39,13 +59,40 @@ const getConfimProducts = async ()=>{
 	}
 }
 
+const getCurrentProduct = ()=>{
+	return confimProducts[confimProductIdx]
+}
+
+const readyStart = async ()=>{
+	await robot.clickWindowWhite()
+	await searchSku()
+}
+
+const searchSku = async ()=>{
+	let product = getCurrentProduct()
+	let sku = product["sku"]
+	sku = `${sku} `;
+	await robot.clickSearchInput()
+	await common.awaitTime(500)
+	await robot.inputContent(sku)
+	await common.awaitTime(500)
+	await robot.clickEnter()
+}
+
+const cleanSku = async ()=>{
+	await robot.clickSearchInput()
+	await common.awaitTime(800)
+	await robot.clickCleanButton()
+}
+
 ;(async ()=>{
-	// fs.watchFile(ruleListJson,watchRuleListCallback)
-	// fs.watchFile(ruleDetailJson,watchRuleDetailCallback)
-	// fs.watchFile(ruleSoldJson,watchRuleSoldCallback)
-	// console.log(`[Notice]: 正在初始化监听文件函数.....`)
-	// await common.awaitTime(3000)
-	// console.log(`[Notice]: 监听文件完毕，开始初始化抓取信息.....`)
+	fs.watchFile(ruleListJson,watchRuleListCallback)
+	fs.watchFile(ruleDetailJson,watchRuleDetailCallback)
+	fs.watchFile(ruleSoldJson,watchRuleSoldCallback)
+	console.log(`[Notice]: 正在初始化监听文件函数.....`)
+	await common.awaitTime(3000)
+	console.log(`[Notice]: 监听文件完毕，开始初始化抓取信息.....`)
 	await getConfimProducts()
+	await readyStart()
 })()
 

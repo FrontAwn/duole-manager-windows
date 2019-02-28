@@ -38,11 +38,24 @@ exports.parseProductDetail = response => {
 }
 
 exports.parseProductList = response => {
-	
+	response = JSON.parse(response)
+	return response['data']['productList']
 }
 
 exports.parseProductSold = response => {
-	
+	response = JSON.parse(response)
+	let soldList = response["data"]["list"]
+	let list = []
+	if ( soldList.length !== 0 ) {
+		soldList.forEach(content=>{
+			list.push({
+				user:content["userName"],
+				size:content["sizeDesc"],
+				time:content["formatTime"]
+			})
+		})
+	}
+	return list
 }
 
 
