@@ -41,6 +41,10 @@ exports.parseProductList = response => {
 	
 }
 
+exports.parseProductSold = response => {
+	
+}
+
 
 
 
