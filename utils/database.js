@@ -1,6 +1,6 @@
 const sequelize = require("sequelize")
 const mysqlConfig = require("../config/mysql.config.js")
-const mysqlEnv = require("../config/env.config.js")["mysqlEnv"]
+const mysqlEnv = require("../env.js")["mysqlEnv"]
 exports.getDuappResource = ()=>{
 	return new sequelize(
 		mysqlConfig['DuappResource'][mysqlEnv]['database'],

@@ -1,7 +1,7 @@
 const path = require("path")
 const Common = require("../../utils/common.js")
 const Request = require("../../utils/request.js")
-var sign = "4eca3fc92f22f18b34d1630c42d04966"
+const sign = request("../../env.js")["signEnv"]
 
 const newSkuJsonPath = path.resolve(__dirname,"json/newSkus.json")
 const newSkuRequest = {}
