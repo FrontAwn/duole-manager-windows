@@ -3,8 +3,8 @@ const Common = require("../../utils/common.js")
 const Request = require("../../utils/request.js")
 var sign = "4eca3fc92f22f18b34d1630c42d04966"
 
-const newSkuRequestListJsonPath = path.resolve(__dirname,"json/newSkuRequestList.json")
-const newSkuRequestList = {}
+const newSkuJsonPath = path.resolve(__dirname,"json/newSkus.json")
+const newSkuRequest = {}
 
 const getRequestUrl = sku=>{
 	return `https://m.poizon.com/search/list?size=[]&title=${sku}&typeId=0&catId=0&unionId=0&sortType=0&sortMode=1&page=0&limit=20&sign=${sign}`
@@ -39,13 +39,13 @@ const getNewSkuListResponse = async newSkus=>{
 		productList.forEach(content=>{
 			productIds.push(content['product']['productId'])
 		})
-		newSkuRequestList[sku] = productIds
+		newSkuRequest[sku] = productIds
 	}
 }
 
 const writeNewSkuListResponse = async ()=>{
-	await Common.writeFile(newSkuRequestListJsonPath,JSON.stringify(newSkuRequestList))
-	console.log(`----------> 一共写入${Object.keys(newSkuRequestList).length}个新货号response信息`)
+	await Common.writeFile(newSkuJsonPath,JSON.stringify(newSkuRequest))
+	console.log(`----------> 一共写入${Object.keys(newSkuRequest).length}个新货号response信息`)
 }
 
 ;(async ()=>{

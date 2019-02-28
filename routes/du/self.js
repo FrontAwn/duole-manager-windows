@@ -1,3 +1,4 @@
+const path = require("path")
 const database = require("../../utils/database.js")
 const model = require("../../utils/model.js")
 const common = require("../../utils/common.js")
@@ -6,6 +7,9 @@ const NikeProductList = model.getNikeProductList()
 const SelfProductList = model.getSelfProductList()
 const SelfProductDetailTotal = model.getSelfProductDetailTotal()
 const routerGet = {}
+
+const skipSkuJson = path.resolve(__dirname,"../../app/du-self/json/skipSkus.json")
+const newSkuJson = path.resolve(__dirname,"../../app/du-self/json/newSkus.json")
 
 routerGet.getProductList = async ctx=>{
 	let query = ctx.query
@@ -66,6 +70,23 @@ routerGet.putConfimSkuDetail = async ctx=>{
 			console.log(`更新数据记录:product_id为${detail["product_id"]}`)
 		}
 	})
+}
+
+routerGet.setSkipStateFromNewSkus = async ctx=>{
+	let skus = JSON.parse(ctx.query.skus)
+	let res = { type:4 }
+	for ( let [idx,sku] of skus.entries() ) {
+		await DuappResource.transaction(async t=>{
+			SelfProductList.update(res,{
+				where:{
+					sku,
+				},
+				transaction:t
+			})
+		})
+	}
+	await common.writeFile(skipSkuJson,JSON.stringify({}))
+	await common.writeFile(newSkuJson,JSON.stringify({}))
 }
 
 exports.get = routerGet

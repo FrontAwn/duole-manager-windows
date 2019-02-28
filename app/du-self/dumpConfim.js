@@ -1,9 +1,9 @@
-const moment = require("moment")
 const path = require("path")
+const moment = require("moment")
+const readline = require("readline")
 const Request = require("../../utils/request.js")
 const Response = require("../../utils/response.js")
 const Common = require("../../utils/common.js")
-const readline = require("readline")
 
 var productIds = []
 const alreadDumpIdsJsonPath = path.resolve(__dirname,"json/alreadyDumpIds.json")
