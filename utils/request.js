@@ -32,7 +32,6 @@ const handleParams = requestParams=>{
 	if ( method === "get" || method === "GET" ) {
 	 	resultParams["params"] = data
 	}
-
 	return resultParams
 }
 

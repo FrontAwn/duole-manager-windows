@@ -10,7 +10,7 @@ module.exports = {
 		if ( requestDetail.url.indexOf("https://m.poizon.com/product/detail") !== -1 ) {
 			let newResponse = responseDetail.response
 			let body = JSON.parse(newResponse.body.toString())
-			await common.writeFile(ruleDetailJson,newResponse.body.toString())
+			common.writeFile(ruleDetailJson,newResponse.body.toString())
 			body['data']['detail']['title'] = ""
 			body['data']['detail']['images'] = []
 			body['data']['relationList'] = []
@@ -20,13 +20,12 @@ module.exports = {
 		}
 		if ( requestDetail.url.indexOf("https://m.poizon.com/product/lastSoldList") !== -1 ) {
 			let soldBody = responseDetail.response.body.toString()
-			await common.writeFile(ruleSoldJson,soldBody)
+			common.writeFile(ruleSoldJson,soldBody)
 		}
 
 		if ( requestDetail.url.indexOf("https://m.poizon.com/search/list") !== -1 ) {
 			let listBody = responseDetail.response.body.toString()
-			await common.writeFile(ruleListJson,listBody)
-
+			common.writeFile(ruleListJson,listBody)
 		}
 		console.log("----------------------------->[SHOW URL]",requestDetail.url)
 	}

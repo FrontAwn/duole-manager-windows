@@ -66,7 +66,7 @@ exports.clickTotalSold =async ()=>{
 
 exports.rollWindow = async ()=>{
 	robot.moveMouse(fullConfig["DUAPP_ROLL_BUTTOM_POSITION"]["x"],fullConfig["DUAPP_ROLL_BUTTOM_POSITION"]["y"])
-	await awaitTime(800)
+	await common.awaitTime(800)
 	robot.mouseToggle("down");
 	robot.dragMouse(fullConfig["DUAPP_ROLL_TOP_POSITION"]["x"],fullConfig["DUAPP_ROLL_TOP_POSITION"]["y"]);
 	robot.mouseToggle("up");
