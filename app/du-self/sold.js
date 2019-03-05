@@ -22,8 +22,8 @@ captureSoldDetailRobot({
 		return products
 	},
 
-	getAlreadyCapture:"/du/self/getAlreadyCaptureProductIdsBySold",
-	setAlreadyCapture:"/du/self/setAlreadyCaptureProductIdBySold",
+	getAlreadyCapture:"/du/self/getAlreadyCaptureBySold",
+	setAlreadyCapture:"/du/self/setAlreadyCaptureBySold",
 
 	watchListPath:ruleListJson,
 	watchDetailPath:ruleDetailJson,

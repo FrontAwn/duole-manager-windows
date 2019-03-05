@@ -37,7 +37,7 @@ const searchSku = async ()=>{
 	let productId = currentProduct["productId"]
 	console.log(`[Notice]: 当前货号为 ${sku}`)
 	console.log(`[Notice]: 当前product_id为 ${productId}`)
-	await redis.set("duapp_current_capture_product_id",productId)
+	await redis.set("du/currentCaptureProductId",productId)
 	await robot.clickSearchInput()
 	await common.awaitTime(500)
 	await robot.inputContent(sku)
@@ -129,21 +129,28 @@ const getNeedCaptureProducts = async (totalProducts,alreadyProducts)=>{
 	return res;
 }
 
-const setAlreadyCaptureProductId = async ()=>{
+const setAlreadyCaptureProduct = async url=>{
 	let currentProduct = getSearchProduct()
 	await request({
-		url:"/du/self/setAlreadyCaptureProductId",
+		url,
 		data:{
 			productId:currentProduct["productId"]
 		}
 	})
 }
 
+const getAlreadyCaptureProducts = async url=>{
+	console.log(url)
+	let res = await request({url})
+	return res["data"]
+}
+
 
 module.exports = async (options)=>{
 
 	let getProducts = options.getProducts || null
-	let getAlreadyCaptureProducts = options.getAlreadyCaptureProducts || null
+	let getAlreadyCapture = options.getAlreadyCapture || null
+	let setAlreadyCapture = options.setAlreadyCapture || null
 
 	let handleList = options.handleList || null
 	let handleDetail = options.handleDetail || null
@@ -155,6 +162,11 @@ module.exports = async (options)=>{
 
 	if ( getProducts === null ) {
 		console.log(`[Error]: getProducts属性必须返回要抓取的products`)
+		process.exit()
+	}
+
+	if ( setAlreadyCapture === null ) {
+		console.log(`[Error]: setAlreadyCapture属性必须设置对应的redis请求接口`)
 		process.exit()
 	}
 
@@ -175,7 +187,7 @@ module.exports = async (options)=>{
 		if ( ruleList.length > 0 ) {
 			await robot.clickDetail(1)
 		} else {
-			await setAlreadyCaptureProductId()
+			await setAlreadyCaptureProduct(setAlreadyCapture)
 			currentCaptureIdx += 1
 			await cleanSku()
 			await common.awaitTime(500)
@@ -192,7 +204,7 @@ module.exports = async (options)=>{
 				await robot.clickBack();
 				await common.awaitTime(2000)
 				await cleanSku()
-				await setAlreadyCaptureProductId()
+				await setAlreadyCaptureProduct(setAlreadyCapture)
 				currentCaptureIdx += 1
 				await common.awaitTime(500)
 				await searchSku()
@@ -215,7 +227,7 @@ module.exports = async (options)=>{
 			await robot.clickBack();
 			await common.awaitTime(2000)
 			await cleanSku()
-			await setAlreadyCaptureProductId()
+			await setAlreadyCaptureProduct(setAlreadyCapture)
 			currentCaptureIdx += 1
 			await common.awaitTime(500)
 			await searchSku()
@@ -227,12 +239,12 @@ module.exports = async (options)=>{
 	fs.watchFile(watchSoldPath,watchSoldCallback)
 	let products = await getProducts()
 	let alreadyCaptureProducts = null
-	if ( getAlreadyCaptureProducts !== null ) {
-		alreadyCaptureProducts = await getAlreadyCaptureProducts()
+	if ( getAlreadyCapture !== null ) {
+		alreadyCaptureProducts = await getAlreadyCaptureProducts(getAlreadyCapture)
 	}
 	needCaptureProducts = await getNeedCaptureProducts(products,alreadyCaptureProducts)
 	console.log(`[Notice]: 正在初始化监听文件函数.....`)
-	console.log(`[Notice]: 一共需要抓取${products.length}个货号`)
+	console.log(`[Notice]: 一共需要抓取${needCaptureProducts.length}个货号`)
 	console.log(`[Notice]: 正在启动自动搜索函数.....`)
 	await common.awaitTime(3000)
 	await readyStart()
