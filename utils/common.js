@@ -86,6 +86,31 @@ exports.deepCopy = obj =>{
 	return JSON.parse(JSON.stringify(obj))
 }
 
+
+
+exports.spliceArray = (datas=[],chunkSize=100)=>{
+	let dataSize = datas.length
+	if ( !Array.isArray(datas) ) {
+		throw new Error('Common:sliceBigDatas; 数据格式必须是array');
+	}
+	if ( dataSize === 0 ) return []
+	if ( dataSize <= chunkSize ) return [datas]
+
+	let chunkNum = Math.ceil(dataSize/chunkSize)
+
+	let chunks = []
+
+	for(let i=0; i<chunkNum; i++) {
+		let start = i * chunkSize
+		let expectEnd = (i+1) * chunkSize;
+		let end = dataSize < expectEnd ? dataSize : expectEnd
+		let dataChunk = datas.slice(start,end);
+		chunks.push(dataChunk);
+	}
+
+	return chunks;
+}
+
 // exports.parseDateString = dateString => {
 // 	let currentDate = moment().format("YYYY-MM-DD")
 // 	let soldDate = ""

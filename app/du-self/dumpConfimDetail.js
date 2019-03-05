@@ -87,9 +87,8 @@ const checkRestartDump = async (confimProductIdsLength,alreadyDumpProductIdsLeng
 		commandLine.question(`[Notice] 当天数据已经抓去一轮完成，是否重新抓去?(y/n): `,async answer=>{
 			if ( answer === "y" || answer === "Y" ) {
 				await writeAlreadyDumpIds(JSON.stringify([]))
-			} else {
-				process.exit(1)
-			}
+			} 
+			process.exit()
 		})
 	} 
 }

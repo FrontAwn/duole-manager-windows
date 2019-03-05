@@ -1,4 +1,4 @@
-const localHost = "192.168.1.96"
+const localHost = "127.0.0.1"
 const remoteHost = "192.168.1.121"
 
 const mysqlConfig = {
