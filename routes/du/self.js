@@ -7,6 +7,7 @@ const NikeProductList = model.getNikeProductList()
 const SelfProductList = model.getSelfProductList()
 const SelfProductDetailTotal = model.getSelfProductDetailTotal()
 const routerGet = {}
+const routerPost = {}
 
 const skipSkuJson = path.resolve(__dirname,"../../app/du-self/json/skipSkus.json")
 const newSkuJson = path.resolve(__dirname,"../../app/du-self/json/newSkus.json")
@@ -89,7 +90,39 @@ routerGet.setSkipStateFromNewSkus = async ctx=>{
 	await common.writeFile(newSkuJson,JSON.stringify({}))
 }
 
+routerPost.setProductSoldDetail = async ctx=>{
+	let body = ""
+
+	let end = async ()=>{
+		body = JSON.parse(body)
+		let { productId, soldDetail} = body
+		soldDetail = JSON.parse(soldDetail)
+		for (let [createAt,detail] of Object.entries(soldDetail)) {
+			let res = {
+				"sold_detail":JSON.stringify(detail)
+			}
+			await DuappResource.transaction(async t=>{
+				await SelfProductDetailTotal.update(res,{
+					where:{
+						"product_id":productId,
+						"create_at":createAt
+					},
+					transaction:t
+				})
+			})
+		}
+	}
+
+	ctx.req.on("data",chunk=>{
+		body += chunk
+	})
+	ctx.req.on("end",end)
+
+
+}
+
 exports.get = routerGet
+exports.post = routerPost
 
 
 

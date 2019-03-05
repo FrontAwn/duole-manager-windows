@@ -14,5 +14,4 @@ const server = new Koa()
 		.listen(8800,"localhost",()=>{
 			console.log("server run success to http://localhost:8800")
 		})
-
 })()

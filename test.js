@@ -53,7 +53,3 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 }
 
 
-
-
-
-
