@@ -3,24 +3,12 @@ const request = require("./utils/request")
 const common = require("./utils/common")
 const database = require("./utils/database")
 const model = require("./utils/model")
-const mysqlConfig = require("./config/mysql.config.js")
-const modelConfig = require("./config/model.config.js")
-const sequelize = require("sequelize")
 
-const DuappResourceLocal = database.getDuappResource()
-const DuappResourceRemote = new sequelize(
-	mysqlConfig['DuappResource']["remote"]['database'],
-	mysqlConfig['DuappResource']["remote"]['username'],
-	mysqlConfig['DuappResource']["remote"]['password'],
-	mysqlConfig['DuappResource']["remote"]['extra'],
-)
+const DuappResourceLocal = database.getMysql("DuappResource","local")
+const DuappResourceRemote = database.getMysql("DuappResource","remote")
 
-const SelfProductDetailTotalLocal = model.getSelfProductDetailTotal()
-const SelfProductDetailTotalRemote = DuappResourceRemote.define(
-	modelConfig['SelfProductDetailTotal']['tableName'],
-	modelConfig['SelfProductDetailTotal']['structure'],
-	modelConfig['SelfProductDetailTotal']['extra'],
-)
+const SelfProductDetailTotalLocal = model.getModel("DuappResource","SelfProductDetailTotal","local")
+const SelfProductDetailTotalRemote = model.getModel("DuappResource","SelfProductDetailTotal","remote")
 
 // 把本地du数据同步到线上
 const asnycSelfProductDetailsToRemote = async ()=>{
@@ -50,6 +38,54 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 			await SelfProductDetailTotalRemote.bulkCreate(details,{transaction:t})
 		})
 	}
+	console.log(`[Succsess]: 同步成功${localNeedCopyDetails.length}条数据`)
+	process.exit()
 }
+
+
+
+
+
+
+;(async ()=>{
+	let redis = database.getRedis("default")
+	console.log(redis)
+})()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
