@@ -24,7 +24,7 @@ captureSoldDetailRobot({
 
 	getAlreadyCapture:"/du/self/getAlreadyCaptureBySold",
 	setAlreadyCapture:"/du/self/setAlreadyCaptureBySold",
-
+	cleanAlreadyCapture:"/du/self/cleanAlreadyCaptureBySold",
 	watchListPath:ruleListJson,
 	watchDetailPath:ruleDetailJson,
 	watchSoldPath:ruleSoldJson
