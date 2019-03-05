@@ -1,6 +1,5 @@
 const path = require("path")
 const moment = require("moment")
-const common = require("../../utils/common.js")
 const request = require("../../utils/request.js")
 const captureSoldDetailRobot = require("../../libs/du/captureSoldDetailRobot.js")
 
@@ -23,21 +22,8 @@ captureSoldDetailRobot({
 		return products
 	},
 
-	getAlreadyCaptureProducts:async ()=>{
-		let res = await request({
-			url:"/du/self/getAlreadyCaptureProductIds"
-		})
-		return res["data"]
-	},
-
-	handleList:async (ruleList,currentProduct)=>{
-	},
-
-	handleDetail:async (ruleDetail,currentProduct)=>{
-	},
-
-	handleSold:async (ruleSold,currentProduct)=>{
-	},
+	getAlreadyCapture:"/du/self/getAlreadyCaptureProductIdsBySold",
+	setAlreadyCapture:"/du/self/setAlreadyCaptureProductIdBySold",
 
 	watchListPath:ruleListJson,
 	watchDetailPath:ruleDetailJson,

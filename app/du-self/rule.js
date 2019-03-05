@@ -27,8 +27,7 @@ module.exports = {
 		if ( requestDetail.url.indexOf("https://m.poizon.com/search/list") !== -1 ) {
 			let newResponse = responseDetail.response
 			let body = JSON.parse(newResponse.body.toString())
-			common.writeFile(ruleListJson,newResponse.body.toString())
-			let currentCaptureProductId = await redis.get("duapp_current_capture_product_id")
+			let currentCaptureProductId = await redis.get("du/currentCaptureProductId")
 			let productList = []
 			if ( currentCaptureProductId !== null && body["data"]["productList"].length !==0 ) {
 				for ( let [idx,content] of body["data"]["productList"].entries() ) {
@@ -37,8 +36,11 @@ module.exports = {
 					}
 				}
 			}
+			console.log(currentCaptureProductId)
+			console.log(productList)
 			body["data"]["productList"] = productList
 			newResponse.body = JSON.stringify(body)
+			common.writeFile(ruleListJson,newResponse.body)
 			return {response:newResponse}
 		}
 		console.log("----------------------------->[SHOW URL]",requestDetail.url)
