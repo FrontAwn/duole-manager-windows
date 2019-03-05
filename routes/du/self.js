@@ -6,6 +6,7 @@ const DuappResource = database.getDuappResource()
 const NikeProductList = model.getNikeProductList()
 const SelfProductList = model.getSelfProductList()
 const SelfProductDetailTotal = model.getSelfProductDetailTotal()
+const redis = database.getRedis()
 const routerGet = {}
 const routerPost = {}
 
@@ -118,7 +119,28 @@ routerPost.setProductSoldDetail = async ctx=>{
 	})
 	ctx.req.on("end",end)
 
+}
 
+
+routerGet.getAlreadyDumpProductIds = async ctx=>{
+	let productIds = await redis.get("duapp_self_already_dump_product_ids")
+	if ( productIds === null ) {
+		await redis.set("duapp_self_already_dump_product_ids",JSON.stringify([]))
+		productIds = []
+	}
+	ctx.body = JSON.parse(productIds)
+}
+
+routerGet.setAlreadyDumpProductId = async ctx=>{
+	let productId = ctx.query["productId"]
+	let productIds = await redis.get("duapp_self_already_dump_product_ids")
+	if ( productIds === null ) {
+		productIds = [productId]
+	} else {
+		productIds = JSON.parse(productIds)
+		if ( !productIds.includes(productId) )	productIds.push(productId)
+	}
+	await redis.set("duapp_self_already_dump_product_ids",JSON.stringify(productIds))
 }
 
 exports.get = routerGet

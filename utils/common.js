@@ -222,7 +222,7 @@ exports.parseDateString = (dateString,format="YYYY-MM-DD") => {
 
 
 exports.indexBy = (datas,index='id')=>{
-	if ( typeof datas !== 'object' && Array.isArray(datas) ) {
+	if ( typeof datas !== 'object' && !Array.isArray(datas) ) {
 		throw new Error('Common:indexBy; datas参数格式必须是array或object');
 	}
 	let res = {}
@@ -231,15 +231,14 @@ exports.indexBy = (datas,index='id')=>{
 			throw new Error('Common:indexBy; index参数不包含在datas中');
 		}
 		res[datas[index]] = datas;
-		return common.deepCopy(res)
+		return exports.deepCopy(res)
 	}
-
 	datas.forEach((data,idx)=>{
 		if ( !data.hasOwnProperty(index) ) {
 			throw new Error('Common:indexBy; index参数不包含在datas中');
 		}
 		res[data[index]] = data
 	})
-	return common.deepCopy(res);
+	return exports.deepCopy(res);
 }
 

@@ -48,8 +48,10 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 
 
 ;(async ()=>{
-	let redis = database.getRedis("default")
-	console.log(redis)
+	// let res = await request({
+	// 	url:"/du/self/getAlreadyDumpProductIds"
+	// })
+	// console.log(res)
 })()
 
 
