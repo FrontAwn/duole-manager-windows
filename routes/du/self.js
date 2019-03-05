@@ -144,6 +144,10 @@ routerGet.setAlreadyCaptureBySold = async ctx=>{
 	await redis.set("du/self/alreadyCaptureBySoldProductIds",JSON.stringify(productIds))
 }
 
+routerGet.cleanAlreadyCaptureBySold = async ctx=>{
+	await redis.set("du/self/alreadyCaptureBySoldProductIds",JSON.stringify([]))
+}
+
 exports.get = routerGet
 exports.post = routerPost
 

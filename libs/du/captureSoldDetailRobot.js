@@ -8,6 +8,8 @@ const response = require("../../utils/response.js")
 const database = require("../../utils/database.js")
 const redis = database.getRedis()
 
+var rootParams = {}
+
 var soldTotal = {}
 
 var needCaptureProducts = []
@@ -22,6 +24,52 @@ const getSearchProduct = ()=>{
 	}
 }
 
+
+const getNeedCaptureProducts = async (totalProducts,alreadyProducts)=>{
+	let res = []
+	let total = common.deepCopy(totalProducts)
+	let already = [] 
+
+	if ( alreadyProducts !== null || Array.isArray(alreadyProducts) && alreadyProducts.length !== 0) {
+		already = common.deepCopy(alreadyProducts)
+	}
+
+	for ( let [idx,detail] of total.entries() ) {
+		if ( !already.includes(detail["product_id"]) ) {
+			res.push({
+				productId:detail["product_id"],
+				sku:detail["sku"]
+			})
+		}
+	}
+
+	return res;
+}
+
+const setAlreadyCaptureProduct = async url=>{
+	let currentProduct = getSearchProduct()
+	await request({
+		url,
+		data:{
+			productId:currentProduct["productId"]
+		}
+	})
+}
+
+const getAlreadyCaptureProducts = async url=>{
+	let res = await request({url})
+	return res["data"]
+}
+
+const cleanAlreadyCaptureProducts =	async url=>{
+	await request({url})
+}
+
+
+
+
+
+// robot
 const readyStart = async ()=>{
 	await robot.clickWindowWhite()
 }
@@ -30,6 +78,7 @@ const searchSku = async ()=>{
 	let currentProduct = getSearchProduct()
 	if ( currentProduct === null ) {
 		consooe.log("[Notice]: 已经抓取完所有货号，没有对应货号信息了")
+		await cleanAlreadyCaptureProducts(rootParams["cleanAlreadyCapture"])
 		process.exit()
 		return
 	}
@@ -108,42 +157,7 @@ const saveSoldDate = async (productId,dateStrings=[],dateScope=null)=>{
 }
 
 
-const getNeedCaptureProducts = async (totalProducts,alreadyProducts)=>{
-	let res = []
-	let total = common.deepCopy(totalProducts)
-	let already = [] 
 
-	if ( alreadyProducts !== null || Array.isArray(alreadyProducts) && alreadyProducts.length !== 0) {
-		already = common.deepCopy(alreadyProducts)
-	}
-
-	for ( let [idx,detail] of total.entries() ) {
-		if ( !already.includes(detail["product_id"]) ) {
-			res.push({
-				productId:detail["product_id"],
-				sku:detail["sku"]
-			})
-		}
-	}
-
-	return res;
-}
-
-const setAlreadyCaptureProduct = async url=>{
-	let currentProduct = getSearchProduct()
-	await request({
-		url,
-		data:{
-			productId:currentProduct["productId"]
-		}
-	})
-}
-
-const getAlreadyCaptureProducts = async url=>{
-	console.log(url)
-	let res = await request({url})
-	return res["data"]
-}
 
 
 module.exports = async (options)=>{
@@ -151,6 +165,7 @@ module.exports = async (options)=>{
 	let getProducts = options.getProducts || null
 	let getAlreadyCapture = options.getAlreadyCapture || null
 	let setAlreadyCapture = options.setAlreadyCapture || null
+ 	let cleanAlreadyCapture = options.cleanAlreadyCapture || null
 
 	let handleList = options.handleList || null
 	let handleDetail = options.handleDetail || null
@@ -166,7 +181,12 @@ module.exports = async (options)=>{
 	}
 
 	if ( setAlreadyCapture === null ) {
-		console.log(`[Error]: setAlreadyCapture属性必须设置对应的redis请求接口`)
+		console.log(`[Error]: setAlreadyCapture属性必须设置代表添加已抓取product缓存的请求接口`)
+		process.exit()
+	}
+
+	if ( cleanAlreadyCapture === null ) {
+		console.log(`[Error]: cleanAlreadyCapture属性必须设置代表清除所有缓存的已抓取product请求接口`)
 		process.exit()
 	}
 
@@ -178,6 +198,18 @@ module.exports = async (options)=>{
 		process.exit()
 	}
 
+	rootParams = {
+		getProducts,
+		getAlreadyCapture,
+		setAlreadyCapture,
+		cleanAlreadyCapture,
+		handleList,
+		handleDetail,
+		handleSold,
+		watchListPath,
+		watchDetailPath,
+		watchSoldPath
+	}
 
 	let watchListCallback = async ()=>{
 		let currentProduct = getSearchProduct()
