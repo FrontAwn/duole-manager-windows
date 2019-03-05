@@ -5,11 +5,7 @@
   "main": "index.js",
   "scripts": {
     "server": "node server.js",
-    "dump-confim-detail": "node app/du-self/dumpConfimDetail.js",
-    "dump-confim-sold": "node app/du-self/dumpConfimSold.js",
-    "dump-new-list": "node app/du-self/dumpNewList.js",
-    "skip-skus": "node app/du-self/skipSkus.js",
-    "du-self-anyproxy-windows": "anyproxy --intercept --rule D:/cyf/program/duole-manager-windows/app/du-self/rule.js"
+    "self-anyproxy": "anyproxy --intercept --rule D:/cyf/program/duole-manager-windows/app/du-self/rule.js"
   },
   "author": "",
   "license": "ISC",

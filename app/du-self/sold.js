@@ -1,17 +1,14 @@
-const fs = require("fs")
 const path = require("path")
 const moment = require("moment")
 const common = require("../../utils/common.js")
 const request = require("../../utils/request.js")
-const response = require("../../utils/response.js")
-const robot = require("../../utils/robot.js")
-const duapp = require("../../utils/duapp.js") 
+const captureSoldDetailRobot = require("../../libs/du/captureSoldDetailRobot.js")
 
-const ruleListJson = path.resolve(__dirname,"./json/ruleList.json")
-const ruleDetailJson = path.resolve(__dirname,"./json/ruleDetail.json")
-const ruleSoldJson = path.resolve(__dirname,"./json/ruleSold.json")
+const ruleListJson = path.resolve(__dirname,"../../json/ruleList.json")
+const ruleDetailJson = path.resolve(__dirname,"../../json/ruleDetail.json")
+const ruleSoldJson = path.resolve(__dirname,"../../json/ruleSold.json")
 
-duapp.robot({
+captureSoldDetailRobot({
 	getProducts:async ()=>{
 		let conditions = {
 			where:JSON.stringify({type:2}),
@@ -26,18 +23,19 @@ duapp.robot({
 		return products
 	},
 
-	getAlreadyDumpProducts:async ()=>{
+	getAlreadyCaptureProducts:async ()=>{
 		let res = await request({
-			url:"/du/self/getAlreadyDumpProductIds"
+			url:"/du/self/getAlreadyCaptureProductIds"
 		})
 		return res["data"]
 	},
-	handleList:async ()=>{
 
+	handleList:async (ruleList,currentProduct)=>{
 	},
-	handleDetail:async ()=>{
 
+	handleDetail:async (ruleDetail,currentProduct)=>{
 	},
+
 	handleSold:async (ruleSold,currentProduct)=>{
 	},
 

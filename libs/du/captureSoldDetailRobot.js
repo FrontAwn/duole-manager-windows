@@ -1,11 +1,11 @@
 const fs = require("fs")
-const robot = require("./robot.js")
-const common = require("./common.js")
 const moment = require("moment")
-const env = require("../env.js")
-const request = require("./request.js")
-const response = require("./response.js")
-const database = require("./database.js")
+const env = require("../../env.js")
+const robot = require("../../utils/robot.js")
+const common = require("../../utils/common.js")
+const request = require("../../utils/request.js")
+const response = require("../../utils/response.js")
+const database = require("../../utils/database.js")
 const redis = database.getRedis()
 
 var soldTotal = {}
@@ -29,7 +29,7 @@ const readyStart = async ()=>{
 const searchSku = async ()=>{
 	let currentProduct = getSearchProduct()
 	if ( currentProduct === null ) {
-		consooe.log("-------------->[Notice]: 已经抓取完所有货号，没有对应货号信息了")
+		consooe.log("[Notice]: 已经抓取完所有货号，没有对应货号信息了")
 		process.exit()
 		return
 	}
@@ -233,7 +233,7 @@ module.exports = async (options)=>{
 	needCaptureProducts = await getNeedCaptureProducts(products,alreadyCaptureProducts)
 	console.log(`[Notice]: 正在初始化监听文件函数.....`)
 	console.log(`[Notice]: 一共需要抓取${products.length}个货号`)
-
+	console.log(`[Notice]: 正在启动自动搜索函数.....`)
 	await common.awaitTime(3000)
 	await readyStart()
 	await searchSku()

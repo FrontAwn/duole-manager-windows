@@ -122,25 +122,25 @@ routerPost.setProductSoldDetail = async ctx=>{
 }
 
 
-routerGet.getAlreadyDumpProductIds = async ctx=>{
-	let productIds = await redis.get("duapp_self_already_dump_product_ids")
+routerGet.getAlreadyCaptureProductIds = async ctx=>{
+	let productIds = await redis.get("duapp_self_already_capture_product_ids")
 	if ( productIds === null ) {
-		await redis.set("duapp_self_already_dump_product_ids",JSON.stringify([]))
+		await redis.set("duapp_self_already_capture_product_ids",JSON.stringify([]))
 		productIds = []
 	}
 	ctx.body = JSON.parse(productIds)
 }
 
-routerGet.setAlreadyDumpProductId = async ctx=>{
+routerGet.setAlreadyCaptureProductId = async ctx=>{
 	let productId = ctx.query["productId"]
-	let productIds = await redis.get("duapp_self_already_dump_product_ids")
+	let productIds = await redis.get("duapp_self_already_capture_product_ids")
 	if ( productIds === null ) {
 		productIds = [productId]
 	} else {
 		productIds = JSON.parse(productIds)
 		if ( !productIds.includes(productId) )	productIds.push(productId)
 	}
-	await redis.set("duapp_self_already_dump_product_ids",JSON.stringify(productIds))
+	await redis.set("duapp_self_already_capture_product_ids",JSON.stringify(productIds))
 }
 
 exports.get = routerGet

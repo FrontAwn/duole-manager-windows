@@ -2,9 +2,9 @@ const path = require("path")
 const common = require("../../utils/common.js")
 const database =require("../../utils/database.js")
 const redis = database.getRedis()
-const ruleDetailJson = path.resolve(__dirname,"./json/ruleDetail.json")
-const ruleSoldJson = path.resolve(__dirname,"./json/ruleSold.json")
-const ruleListJson = path.resolve(__dirname,"./json/ruleList.json")
+const ruleDetailJson = path.resolve(__dirname,"../../json/ruleDetail.json")
+const ruleSoldJson = path.resolve(__dirname,"../../json/ruleSold.json")
+const ruleListJson = path.resolve(__dirname,"../../json/ruleList.json")
 
 module.exports = {
 	async beforeSendResponse(requestDetail, responseDetail) {
@@ -28,11 +28,11 @@ module.exports = {
 			let newResponse = responseDetail.response
 			let body = JSON.parse(newResponse.body.toString())
 			common.writeFile(ruleListJson,newResponse.body.toString())
-			let currentDumpProductId = await redis.get("duapp_current_dump_product_id")
+			let currentCaptureProductId = await redis.get("duapp_current_capture_product_id")
 			let productList = []
-			if ( currentDumpProductId !== null && body["data"]["productList"].length !==0 ) {
+			if ( currentCaptureProductId !== null && body["data"]["productList"].length !==0 ) {
 				for ( let [idx,content] of body["data"]["productList"].entries() ) {
-					if ( parseInt(content["productId"]) === parseInt(currentDumpProductId) ) {
+					if ( parseInt(content["productId"]) === parseInt(currentCaptureProductId) ) {
 						productList.push(content)
 					}
 				}
