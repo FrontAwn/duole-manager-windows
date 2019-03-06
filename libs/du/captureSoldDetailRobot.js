@@ -68,7 +68,6 @@ const cleanAlreadyCaptureProducts =	async url=>{
 
 
 
-
 // robot
 const readyStart = async ()=>{
 	await robot.clickWindowWhite()
@@ -77,7 +76,7 @@ const readyStart = async ()=>{
 const searchSku = async ()=>{
 	let currentProduct = getSearchProduct()
 	if ( currentProduct === null ) {
-		consooe.log("[Notice]: 已经抓取完所有货号，没有对应货号信息了")
+		console.log("[Notice]: 已经抓取完所有货号，没有对应货号信息了")
 		await cleanAlreadyCaptureProducts(rootParams["cleanAlreadyCapture"])
 		process.exit()
 		return
