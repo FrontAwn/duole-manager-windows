@@ -52,6 +52,16 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 	// 	url:"/du/self/getAlreadyDumpProductIds"
 	// })
 	// console.log(res)
+
+	// await request({
+	// 	url:"/du/self/setAlreadyCaptureByDetail",
+	// 	data:{
+	// 		productId:"9937"
+	// 	}
+	// })
+	// await request({
+	// 	url:"/du/self/cleanAlreadyCaptureByDetail",
+	// })
 })()
 
 
