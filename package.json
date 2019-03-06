@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "server": "node server.js",
-    "self-anyproxy": "anyproxy --intercept --rule D:/cyf/program/duole-manager-windows/app/du-self/rule.js"
+    "self-anyproxy": "anyproxy --intercept --rule D:/cyf/program/duole-manager-windows/app/du-self/rule.js",
+    "du-self-details": "node app/du-self/details.js",
+    "du-self-sold": "node app/du-self/sold.js"
   },
   "author": "",
   "license": "ISC",

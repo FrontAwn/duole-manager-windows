@@ -5,6 +5,27 @@ const request = require("../../utils/request.js")
 const captureProductDetailParser = require("../../libs/du/captureProductDetailParser.js")
 
 captureProductDetailParser({
+
+	captureBefore:async ()=>{
+		let conditions = {
+			where:JSON.stringify({
+				type:0
+			})
+		}
+		let res = await request({
+			url:"/du/self/getProductList",
+			data:conditions
+		})
+
+		let datas = res["data"]
+		let length = datas.length
+
+		if ( length > 0 ) {
+			console.log(`[Notice]: 当前存在个${length}新货号需要处理`)	
+			process.exit()
+		}
+	},
+
 	getProducts:async ()=>{
 		let conditions = {
 			where:JSON.stringify({
