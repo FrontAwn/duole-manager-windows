@@ -1,5 +1,7 @@
+const path = require("path")
 const moment = require("moment")
 const request = require("./utils/request")
+const response = require("./utils/response")
 const common = require("./utils/common")
 const database = require("./utils/database")
 const model = require("./utils/model")
@@ -9,6 +11,11 @@ const DuappResourceRemote = database.getMysql("DuappResource","remote")
 
 const SelfProductDetailTotalLocal = model.getModel("DuappResource","SelfProductDetailTotal","local")
 const SelfProductDetailTotalRemote = model.getModel("DuappResource","SelfProductDetailTotal","remote")
+
+const ruleSoldJson = path.resolve(__dirname,"./json/ruleSold.json")
+
+
+const CaptureUtils = require("./libs/du/utils.js")
 
 // 把本地du数据同步到线上
 const asnycSelfProductDetailsToRemote = async ()=>{
@@ -66,23 +73,19 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 	// await request({
 	// 	url:"/du/self/cleanAlreadyCaptureBySold"
 	// })
+
+	// let content = await common.readFile(ruleSoldJson)
+	// let datas = response.parseProductSold(content.toString())
+	// for ( let [idx,content] of Object.entries(datas) ) {
+	// 	console.log(common.parseDateString(content["time"]))
+	// }
+	// console.log(datas)
+	await CaptureUtils.cleanCurrentCaptureIndex()
+
+	await CaptureUtils.cleanAlreadyCaptureProductId("sold") 
+
+	process.exit()
 })()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

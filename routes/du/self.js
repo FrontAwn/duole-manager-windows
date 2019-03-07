@@ -98,6 +98,7 @@ routerPost.setProductSoldDetail = async ctx=>{
 		body = JSON.parse(body)
 		let { productId, soldDetail} = body
 		soldDetail = JSON.parse(soldDetail)
+		console.log(soldDetail)
 		for (let [createAt,detail] of Object.entries(soldDetail)) {
 			let res = {
 				"sold_detail":JSON.stringify(detail)
@@ -120,110 +121,6 @@ routerPost.setProductSoldDetail = async ctx=>{
 	ctx.req.on("end",end)
 
 }
-
-
-
-const getAlreadyCapture = async type=>{
- 	let productIds = []
- 	
- 	switch (type) {
- 		case "list":
- 			productIds = await redis.get("du/self/alreadyCaptureByListProductIds")
- 			break;
- 		case "detail":
- 			productIds = await redis.get("du/self/alreadyCaptureByDetailProductIds")
- 			break;
- 		case "sold":
- 			productIds = await redis.get("du/self/alreadyCaptureBySoldProductIds")
- 			break;
- 	}
-
- 	if ( productIds === null ) {
-		productIds = []
-	} else {
-		productIds = JSON.parse(productIds) 
-	}
-	return productIds
-}
-
-const setAlreadyCapture = async (type,productId)=>{
-	let productIds = []
- 	let setKey = ""
-
-	switch (type) {
- 		case "list":
- 			productIds = await redis.get("du/self/alreadyCaptureByListProductIds")
- 			setKey = "du/self/alreadyCaptureByListProductIds"
- 			break;
- 		case "detail":
- 			productIds = await redis.get("du/self/alreadyCaptureByDetailProductIds")
- 			setKey = "du/self/alreadyCaptureByDetailProductIds"
-
- 			break;
- 		case "sold":
- 			productIds = await redis.get("du/self/alreadyCaptureBySoldProductIds")
- 			setKey = "du/self/alreadyCaptureBySoldProductIds"
- 			break;
- 	}
-
- 	if ( productIds === null ) {
-		productIds = [productId]
-	} else {
-		productIds = JSON.parse(productIds)
-		if ( !productIds.includes(productId) )	productIds.push(productId)
-	}
-	
-	await redis.set(setKey,JSON.stringify(productIds))
-	
-}
-
-const cleanAlreadyCapture = async type=>{
- 	let setKey = ""
- 	switch (type) {
- 		case "list":
- 			setKey = "du/self/alreadyCaptureByListProductIds"
- 			break;
- 		case "detail":
- 			setKey = "du/self/alreadyCaptureByDetailProductIds"
-
- 			break;
- 		case "sold":
- 			setKey = "du/self/alreadyCaptureBySoldProductIds"
- 			break;
- 	}
- 	await redis.set(setKey,JSON.stringify([]))
-}
-
-
-routerGet.getAlreadyCaptureBySold = async ctx=>{
-	let productIds = await getAlreadyCapture("sold")
-	ctx.body = productIds
-}
-
-routerGet.setAlreadyCaptureBySold = async ctx=>{
-	let productId = ctx.query["productId"]
-	await setAlreadyCapture("sold",productId)
-}
-
-routerGet.cleanAlreadyCaptureBySold = async ctx=>{
-	await cleanAlreadyCapture("sold")
-}
-
-
-routerGet.getAlreadyCaptureByDetail = async ctx=>{
-	let productIds = await getAlreadyCapture("detail")
-	ctx.body = productIds
-}
-
-routerGet.setAlreadyCaptureByDetail = async ctx=>{
-	let productId = ctx.query["productId"]
-	await setAlreadyCapture("detail",productId)
-}
-
-routerGet.cleanAlreadyCaptureByDetail = async ctx=>{
-	await cleanAlreadyCapture("detail")
-}
-
 
 exports.get = routerGet
 exports.post = routerPost

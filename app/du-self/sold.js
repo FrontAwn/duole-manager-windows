@@ -1,32 +1,52 @@
 const path = require("path")
 const moment = require("moment")
 const request = require("../../utils/request.js")
-const captureSoldDetailRobot = require("../../libs/du/captureSoldDetailRobot.js")
+const common = require("../../utils/common.js")
 
-const ruleListJson = path.resolve(__dirname,"../../json/ruleList.json")
-const ruleDetailJson = path.resolve(__dirname,"../../json/ruleDetail.json")
-const ruleSoldJson = path.resolve(__dirname,"../../json/ruleSold.json")
+const CaptureUtils = require("../../libs/du/utils.js")
+const CaptureRobot = require("../../libs/du/captureRobot.js")
 
-captureSoldDetailRobot({
-	getProducts:async ()=>{
-		let conditions = {
-			where:JSON.stringify({type:2}),
+
+const getNeedCaptureProducts = async ()=>{
+	let conditions = {
+		where:JSON.stringify({type:2}),
+	}
+	let res = await request({
+		url:"/du/self/getProductList",
+		data:conditions
+	})
+
+	let products = res["data"]
+
+	return products
+}
+
+const getRestProducts = (needCaptureProducts,alreadyCaptureProducts)=>{
+	let res = []
+	if ( alreadyCaptureProducts === null || Array.isArray(alreadyCaptureProducts) && alreadyCaptureProducts.length === 0 ) {
+		res = common.deepCopy(needCaptureProducts)
+	} else {
+		for ( let [idx,product] of needCaptureProducts.entries() ) {
+			if ( !alreadyCaptureProducts.includes(product["product_id"]) ) {
+				res.push(product)
+			}
 		}
-		let res = await request({
-			url:"/du/self/getProductList",
-			data:conditions
-		})
+	}
+	return res;
+}
 
-		let products = res["data"]
+;(async ()=>{
+	let needCaptureProducts = await getNeedCaptureProducts()
+	let alreadyCaptureProducts = await CaptureUtils.getAlreadyCaptureProductId("sold")
+	let restProducts = getRestProducts(needCaptureProducts,alreadyCaptureProducts)
+	if ( restProducts.length !== 0 ) {
+		console.log(`[Notice]: 一共需要抓取${restProducts.length}个货号`)
+		console.log(`[Notice]: 两秒钟后启动抓取函数...`)
+		await common.awaitTime(2000)
+		await CaptureRobot.start(restProducts)
+	} else {
 
-		return products
-	},
+	}
+})()
 
-	getAlreadyCapture:"/du/self/getAlreadyCaptureBySold",
-	setAlreadyCapture:"/du/self/setAlreadyCaptureBySold",
-	cleanAlreadyCapture:"/du/self/cleanAlreadyCaptureBySold",
-	watchListPath:ruleListJson,
-	watchDetailPath:ruleDetailJson,
-	watchSoldPath:ruleSoldJson
-})
 
