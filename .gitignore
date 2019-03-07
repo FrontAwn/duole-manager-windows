@@ -1,3 +1,4 @@
 node_modules/*
 download/*
 env.js
+json/*
