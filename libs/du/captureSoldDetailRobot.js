@@ -1,6 +1,6 @@
 const fs = require("fs")
 const moment = require("moment")
-const env = require("../../env.js")
+const config = require("../../config.js")
 const robot = require("../../utils/robot.js")
 const common = require("../../utils/common.js")
 const request = require("../../utils/request.js")
@@ -111,8 +111,8 @@ const rollSold = async ()=>{
 
 const saveSoldDate = async (productId,dateStrings=[],dateScope=null)=>{
 	let currentDate = moment().format("YYYY-MM-DD")
-	if ( dateScope === null && env["soldDateScope"] ) {
-		dateScope = env["soldDateScope"]
+	if ( dateScope === null && config["soldDateScope"] ) {
+		dateScope = config["soldDateScope"]
 	}
 	if ( dateScope === null ) { 
 		dateScope = 1
