@@ -101,7 +101,40 @@ routerGet.putSelfNewProductUrl = async ctx=>{
 }
 
 
+routerGet.getNikeNewProductIds = async ctx=>{
+	let productIds = []
+	let res = await NikeProductList.findAll({
+		raw:true,
+		attributes:["product_id"],
+		where:{
+			type:0,
+			url:""
+		}
+	})
+	res.forEach(content=>{
+		productIds.push(content['product_id'])
+	})
+	ctx.body = productIds
+}
 
+routerGet.putNikeNewProductUrl = async ctx=>{
+	let url = ctx.query.url
+	let urlObject = common.urlParse(url)
+	let query = common.qsParse(urlObject['query'])
+	let productId = query['productId']
+	let res = {
+		"url":url,
+		"type":2
+	}
+	await DuappResource.transaction(async t=>{
+		await NikeProductList.update(res,{
+			where:{
+				"product_id":productId
+			},
+			transaction:t
+		})
+	})
+}
 
 
 
