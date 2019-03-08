@@ -90,6 +90,10 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 	// let res = await request({
 	// 	url:"/chrome/extension/getNikeNewProductIds"
 	// })
+
+	await request({
+		url:"/chrome/extension/getSelfNewProductIds"
+	})
 })()
 
 

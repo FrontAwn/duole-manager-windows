@@ -8,11 +8,7 @@ const NikeProductList = model.getNikeProductList()
 const SelfProductList = model.getSelfProductList()
 const SelfProductDetailTotal = model.getSelfProductDetailTotal()
 const routerGet = {}
-
-const newSkuJson = path.resolve(__dirname,"../../app/du-self/json/newSkus.json")
-const skipSkuJson = path.resolve(__dirname,"../../app/du-self/json/skipSkus.json")
-
-var newSkuRequest = null
+const CaptureUtils = require("../../libs/du/utils.js")
 
 routerGet.getSelfConfimProductIds = async ctx=>{
 	let res = await SelfProductList.findAll({
@@ -51,13 +47,10 @@ routerGet.putSelfConfimProductUrl = async ctx=>{
 
 
 routerGet.getSelfNewProductIds = async ctx=>{
-	if ( newSkuRequest === null ) {
-		newSkuRequest = await common.readFile(newSkuJson)
-		newSkuRequest = JSON.parse(newSkuRequest.toString())	
-	}
+	let newList = await CaptureUtils.getNewList();
 	let productIds = []
-	if ( Object.keys(newSkuRequest).length > 0 ) {
-		for (let [sku,ids] of Object.entries(newSkuRequest)) {
+	if ( Object.keys(newList).length > 0 ) {
+		for (let [sku,ids] of Object.entries(newList)) {
 			productIds = [...productIds,...ids]
 		}	
 	}
@@ -67,11 +60,9 @@ routerGet.getSelfNewProductIds = async ctx=>{
 
 routerGet.putSelfNewProductUrl = async ctx=>{
 	let url = ctx.query.url
-	if ( newSkuRequest === null ) {
-		newSkuRequest = await common.readFile(newSkuJson)
-		newSkuRequest = JSON.parse(newSkuRequest.toString())	
-	}
-	let newSkus = Object.keys(newSkuRequest)
+
+	let newList = await CaptureUtils.getNewList();
+	let newSkus = Object.keys(newList)
 	let detailResponse = await common.httpGet(url)
 	let detail = response.parseProductDetail(detailResponse)
 	if ( detail !== null ) {
@@ -93,9 +84,9 @@ routerGet.putSelfNewProductUrl = async ctx=>{
 					},
 					transaction:t
 				})
-				delete newSkuRequest[sku]
+				delete newList[sku]
 			})
-			await common.writeFile(skipSkuJson,JSON.stringify(newSkuRequest))
+			await CaptureUtils.setNewList(newList)
 		}
 	}
 }

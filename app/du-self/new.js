@@ -36,14 +36,16 @@ const getCaptureList = async (list,sku)=>{
 	let productIds = []
 	if ( list.length > 0 ) {
 		list.forEach(content=>{
-
+			productIds.push(content['product']['productId'])
 		})
 	}
 	captureList[sku] = productIds
 }
 
 const captureAfter = async ()=>{
-
+	await CaptureUtils.setNewList(captureList)
+	console.log(`[Notice]: 一共添加了${Object.keys(captureList).length}条new货号信息`)
+	process.exit()
 }
 
 ;(async ()=>{

@@ -154,6 +154,25 @@ exports.cleanSoldDetail = async ()=>{
 }
 
 
+exports.getNewList = async ()=>{
+	let newList = await redis.get("du/newList")
+	if ( newList === null ) {
+		newList = {}
+	} else {
+		newList = JSON.parse(newList)
+	}
+	return newList
+}
+
+exports.setNewList = async newList=>{
+	await redis.set("du/newList",JSON.stringify(newList))
+}
+
+exports.cleanNewList = async ()=>{
+	await redis.set("du/newList",JSON.stringify({}))
+}
+
+
 
 
 
