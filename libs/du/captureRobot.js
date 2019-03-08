@@ -9,6 +9,15 @@ const database = require("../../utils/database.js")
 const utils = require("./utils.js")
 const redis = database.getRedis()
 
+
+const checkHasCaptureProduct = async (products,idx)=>{
+	if ( !products[idx] ) {
+		console.log(`[Notice]: ------------ 所有货号抓取完毕 ------------`)
+		process.exit()
+	}
+}
+
+
 exports.start = async (products,sign=1)=>{
 	let idx = 0
 	await utils.setCurrentCaptureIndex(idx)
@@ -37,6 +46,7 @@ exports.handleList = async (listString,url,sign=1)=>{
 		}
 		await utils.cleanSkuRobot()
 		await common.awaitTime(500)
+		checkHasCaptureProduct(products,idx)
 		await utils.searchSkuRobot(products[idx])
 	}
 }
@@ -56,8 +66,8 @@ exports.handleDetail = async (detailString,sign=1)=>{
 		idx += 1
 		await utils.setCurrentCaptureIndex(idx,sign)
 		await common.awaitTime(500)
+		checkHasCaptureProduct(products,idx)
 		await utils.searchSkuRobot(products[idx])
-
 	} else {
 		await robot.clickTotalSold()
 	}
@@ -102,6 +112,7 @@ exports.handleSold = async (soldString,sign=1)=>{
 		await common.awaitTime(2000)
 		await utils.cleanSkuRobot()
 		await common.awaitTime(500)
+		checkHasCaptureProduct(products,idx)
 		await utils.searchSkuRobot(products[idx])
 	}
 }

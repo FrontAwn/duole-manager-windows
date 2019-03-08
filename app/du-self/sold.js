@@ -2,6 +2,12 @@ const path = require("path")
 const moment = require("moment")
 const request = require("../../utils/request.js")
 const common = require("../../utils/common.js")
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 
 const CaptureUtils = require("../../libs/du/utils.js")
 const CaptureRobot = require("../../libs/du/captureRobot.js")
@@ -45,7 +51,14 @@ const getRestProducts = (needCaptureProducts,alreadyCaptureProducts)=>{
 		await common.awaitTime(2000)
 		await CaptureRobot.start(restProducts)
 	} else {
-
+		rl.question('当前已经没有货号可以抓取，是否清除缓存重新抓取(y/n)？', (answer) => {
+			if ( answer === "y" || answer === "Y" ) {
+				await CaptureUtils.cleanAlreadyCaptureProductId("sold")
+				console.log(`[Notice]: 当前已经清除已抓取缓存，可以重新抓取`)
+			}
+			rl.close()
+		});
+		process.exit()
 	}
 })()
 
