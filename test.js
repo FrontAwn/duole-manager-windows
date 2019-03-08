@@ -79,12 +79,17 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 	// for ( let [idx,content] of Object.entries(datas) ) {
 	// 	console.log(common.parseDateString(content["time"]))
 	// }
-	// console.log(datas)
-	await CaptureUtils.cleanCurrentCaptureIndex()
 
-	await CaptureUtils.cleanAlreadyCaptureProductId("sold") 
 
-	process.exit()
+	// await CaptureUtils.cleanCurrentCaptureIndex()
+
+	// await CaptureUtils.cleanAlreadyCaptureProductId("sold") 
+
+	// process.exit()
+
+	// let res = await request({
+	// 	url:"/chrome/extension/getNikeNewProductIds"
+	// })
 })()
 
 

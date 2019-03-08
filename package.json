@@ -5,10 +5,12 @@
   "main": "index.js",
   "scripts": {
     "server": "node server.js",
-    "self-anyproxy-windows": "anyproxy --intercept --rule D:/cyf/program/duole-manager-windows/app/du-self/rule.js",
-    "self-anyproxy-mac":"anyproxy --intercept --rule /Users/chengyufeng/Framework/duole-manager-windows/app/du-self/rule.js",
-    "du-self-details": "node app/du-self/details.js",
-    "du-self-sold": "node app/du-self/sold.js"
+    "du-self-rule-windows": "anyproxy --intercept --rule D:/cyf/program/duole-manager-windows/app/du-self/rule.js",
+    "du-self-rule-mac":"anyproxy --intercept --rule /Users/chengyufeng/Framework/duole-manager-windows/app/du-self/rule.js",
+    "du-self-detail": "node app/du-self/detail.js",
+    "du-self-sold": "node app/du-self/sold.js",
+    "du-nike-list":"node app/du-nike/list.js",
+    "du-nike-detail":"node app/du-nike/detail.js"
   },
   "author": "",
   "license": "ISC",

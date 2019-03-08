@@ -188,8 +188,6 @@ exports.rollSoldRobot = async ()=>{
 	await robot.rollWindow()
 	await common.awaitTime(300)
 	await robot.rollWindow()
-	await common.awaitTime(300)
-	await robot.rollWindow()
 }
 
 exports.parseSold = async (dateStrings=[],dateScope=null)=>{

@@ -25,6 +25,16 @@ const modelConfig = {
 				allowNull:false,
 				defaultValue:'',
 			},
+			sku:{
+				type:STRING(100),
+				allowNull:false,
+				defaultValue:"",
+			},
+			type:{
+				type:INTEGER(4).UNSIGNED,
+				allowNull:false,
+				defaultValue:0,
+			},
 			create_at:{
 				type:STRING(100),
 				allowNull:false,
@@ -65,7 +75,7 @@ const modelConfig = {
 				defaultValue:"",
 			},
 			type:{
-				type:INTEGER(5).UNSIGNED,
+				type:INTEGER(4).UNSIGNED,
 				allowNull:false,
 				defaultValue:0,
 			},
