@@ -51,14 +51,15 @@ const getRestProducts = (needCaptureProducts,alreadyCaptureProducts)=>{
 		await common.awaitTime(2000)
 		await CaptureRobot.start(restProducts)
 	} else {
-		rl.question('当前已经没有货号可以抓取，是否清除缓存重新抓取(y/n)？', (answer) => {
+		rl.question('当前已经没有货号可以抓取，是否清除缓存重新抓取(y/n)？', async (answer) => {
 			if ( answer === "y" || answer === "Y" ) {
 				await CaptureUtils.cleanAlreadyCaptureProductId("sold")
 				console.log(`[Notice]: 当前已经清除已抓取缓存，可以重新抓取`)
+				process.exit()
+			} else {
+				process.exit()
 			}
-			rl.close()
 		});
-		process.exit()
 	}
 })()
 
