@@ -18,19 +18,23 @@ exports.start = async (products,sign=1)=>{
 	await utils.searchSkuRobot(products[idx])
 }
 
-exports.handleList = async (listString,sign=1)=>{
+exports.handleList = async (listString,url,sign=1)=>{
 	let list = response.parseProductList(listString)
 	let products = await utils.getNeedCaptureProducts(sign)
 	let idx = await utils.getCurrentCaptureIndex(sign)
 	let product = products[idx]
-
+	url = common.urlParse(url)
+	let query = common.qsParse(url["query"])
+	let sku = query["title"]
 	await common.awaitTime(1200)
 	if ( list.length > 0 ) {
 		await robot.clickDetail(1)
 	} else {
-		await utils.setAlreadyCaptureProductId("sold",product["product_id"])
-		idx += 1
-		await utils.setCurrentCaptureIndex(idx,sign)
+		if ( sku.length <= 12 ) {
+			await utils.setAlreadyCaptureProductId("sold",product["product_id"])
+			idx += 1
+			await utils.setCurrentCaptureIndex(idx,sign)
+		}
 		await utils.cleanSkuRobot()
 		await common.awaitTime(500)
 		await utils.searchSkuRobot(products[idx])

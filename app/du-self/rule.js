@@ -68,7 +68,7 @@ module.exports = {
 
 
 			common.writeFile(ruleListJson,newResponse.body)
-			CaptureRobot.handleList(newResponse.body)
+			CaptureRobot.handleList(newResponse.body,requestDetail.url)
 			return {response:newResponse}
 		}
 		console.log("----------------------------->[SHOW URL]",requestDetail.url)
