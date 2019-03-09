@@ -7,6 +7,7 @@ const routerPost = {}
 const redis = database.getRedis()
 const DuappResource = database.getMysql("DuappResource");
 const NikeProductList = model.getModel("DuappResource","NikeProductList");
+const NikeProductDetailTotal = model.getModel("DuappResource","NikeProductDetailTotal")
 
 routerGet.getProductList = async ctx=>{
 	let query = ctx.query
@@ -54,6 +55,32 @@ routerGet.updateProductList = async ctx=>{
 		});
 	})
 }
+
+routerGet.setProductDetail = async ctx=>{
+	let detail = JSON.parse(ctx.query.detail)
+	let res = await NikeProductDetailTotal.findOne({
+		raw:true,
+		where:{
+			"product_id":detail["product_id"],
+			"create_at":detail["create_at"]
+		}
+	})
+	await DuappResource.transaction(async t=>{
+		if ( res === null ) {
+			await NikeProductDetailTotal.create(detail,{transaction:t})
+			console.log(`创建数据记录:product_id为${detail["product_id"]}`)
+		} else {
+			await NikeProductDetailTotal.update(detail,{
+				where:{
+					"product_id":detail["product_id"]
+				},
+				transaction:t
+			})
+			console.log(`更新数据记录:product_id为${detail["product_id"]}`)
+		}
+	})
+}
+
 
 
 exports.get = routerGet

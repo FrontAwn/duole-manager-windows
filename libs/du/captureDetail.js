@@ -42,11 +42,10 @@ module.exports = async options=>{
 			console.log(`----------> 已经完成[ ${currentCaptureIdx}/${needCaptureProducts.length} ] `)
 			await common.awaitTime(300)
 		}
-	} else {
-		console.log("[Notice]: 当天数据已经抓取完成一轮，正在消除缓存重新抓取")
+		console.log("[Notice]: 当天数据已经抓取完成一轮，正在消除缓存")
 		await utils.cleanAlreadyCaptureProductId("detail")
 		console.log("[Notice]: 缓存已经清除完成，可以重新抓取")
 		process.exit()
-	}
+	} 
 
 }

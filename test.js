@@ -84,6 +84,7 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 	// await CaptureUtils.cleanCurrentCaptureIndex()
 
 	// await CaptureUtils.cleanAlreadyCaptureProductId("sold") 
+	await CaptureUtils.cleanAlreadyCaptureProductId("detail") 
 
 	// process.exit()
 
@@ -91,9 +92,9 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 	// 	url:"/chrome/extension/getNikeNewProductIds"
 	// })
 
-	await request({
-		url:"/chrome/extension/getSelfNewProductIds"
-	})
+	// await request({
+	// 	url:"/chrome/extension/getSelfNewProductIds"
+	// })
 })()
 
 
