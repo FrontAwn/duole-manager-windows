@@ -7,44 +7,60 @@ const response = require("../../utils/response.js")
 const CaptureUtils = require("../../libs/du/utils.js")
 const CaptureList = require("../../libs/du/captureList.js")
 
-const alreadyCaptureProductIds = []
+const alreadyCaptureProducts = {}
 
-const hasProductIds = []
-const diffProductIds = []
-const totalProductIds = []
+const needToConfimIds = []
+const notChangeIds = []
+const diffIds = []
+const allCaptureIds = []
+
+var currentCaptureIds = []
 
 const printCaptureProcess = ()=>{
-	console.log(`----------> 当前已经抓取${totalProductIds.length}个货号`)
-	console.log(`----------> has: ${hasProductIds.length}`)
-	console.log(`----------> new: ${diffProductIds.length}`)
+	console.log(`----------> 当前已经抓取${allCaptureIds.length}个货号`)
+	console.log(`----------> needConfim: ${needToConfimIds.length}`)
+	console.log(`----------> notChange: ${notChangeIds.length}`)
+	console.log(`----------> newChange: ${diffIds.length}`)
+	console.log(`----------> captureIds: ${currentCaptureIds}`)
 }
 
-const getAlreadyCaptureProductIds = async ()=>{
+const getAlreadyCaptureProducts = async ()=>{
 	let conditions = {
-		where:JSON.stringify({type:2}),
-		attrs:JSON.stringify(["product_id"])
+		attrs:JSON.stringify(["product_id","type"])
 	}
 	let res = await request({
 		url:"/du/nike/getProductList",
 		data:conditions
 	})
-	for (let [idx,content] of res["data"].entries()) {
-		alreadyCaptureProductIds.push(content["product_id"])
+
+	for ( let [idx,content] of res["data"].entries() ) {
+		alreadyCaptureProducts[content["product_id"]] = content["type"]
 	}
 }
 
 const getCaptureList = async list=>{
+	currentCaptureIds = []
 	for ( let [idx,content] of list.entries() ) {
 		let product = content["product"]
 		let productId = product["productId"].toString()
 		let title = product["title"]
-		totalProductIds.push(productId)
-		if ( alreadyCaptureProductIds.includes(productId) ) {
-			hasProductIds.push(productId)
-			let idx = alreadyCaptureProductIds.indexOf(productId)
-			alreadyCaptureProductIds.splice(idx,1)
+		allCaptureIds.push(productId)
+		currentCaptureIds.push(productId)
+		if ( alreadyCaptureProducts[productId] ) {
+
+			let type = alreadyCaptureProducts[productId]
+
+			switch (type) {
+				case 2:
+					notChangeIds.push(productId)
+					break;
+				case 4:
+					needToConfimIds.push(productId)
+					break;
+			}
+			delete alreadyCaptureProducts[productId]
 		} else {
-			if ( hasProductIds.includes(productId) ) continue;
+			if ( notChangeIds.includes(productId) || needToConfimIds.includes(productId) ) continue;
 			let res = {
 				"product_id":productId,
 				title,
@@ -57,15 +73,27 @@ const getCaptureList = async list=>{
 					res:JSON.stringify(res)
 				}
 			})
-			diffProductIds.push(productId)
+			diffIds.push(productId)
 		}
 	}
 	printCaptureProcess()
 }
 
 const captureAfter = async ()=>{
-	console.log(`[Notice]: 一共有${alreadyCaptureProductIds.length}货号下架`)
-	for ( let [idx,productId] of alreadyCaptureProductIds.entries() ) {
+	let needToSkipIds = Object.keys(alreadyCaptureProducts)
+	console.log(`[Notice]: 一共有${needToConfimIds.length}货号重新上架`)
+	console.log(`[Notice]: 一共有${needToSkipIds.length}货号下架`)
+	for ( let [idx,productId] of needToConfimIds.entries() ) {
+		let conditions = {
+			where:JSON.stringify({product_id:productId}),
+			content:JSON.stringify({type:2})
+		}
+		await request({
+			url:"/du/nike/updateProductList",
+			data:conditions
+		})
+	}
+	for ( let [idx,productId] of needToSkipIds.entries() ) {
 		let conditions = {
 			where:JSON.stringify({product_id:productId}),
 			content:JSON.stringify({type:4})
@@ -79,12 +107,11 @@ const captureAfter = async ()=>{
 }
 
 ;(async ()=>{
-	await getAlreadyCaptureProductIds()
+	await getAlreadyCaptureProducts()
 	await CaptureList({
 		captureType:"nike",
 		getCaptureList,	
 		captureAfter,
 	})
-
 })()
 

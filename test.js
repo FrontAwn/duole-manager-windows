@@ -82,9 +82,8 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 
 
 	// await CaptureUtils.cleanCurrentCaptureIndex()
-
 	// await CaptureUtils.cleanAlreadyCaptureProductId("sold") 
-	await CaptureUtils.cleanAlreadyCaptureProductId("detail") 
+	// await CaptureUtils.cleanAlreadyCaptureProductId("detail") 
 
 	// process.exit()
 

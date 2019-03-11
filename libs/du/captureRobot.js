@@ -8,6 +8,7 @@ const response = require("../../utils/response.js")
 const database = require("../../utils/database.js")
 const utils = require("./utils.js")
 const redis = database.getRedis()
+const config = require("../../config.js")
 
 
 const checkHasCaptureProduct = async (products,idx)=>{
@@ -62,9 +63,13 @@ exports.handleDetail = async (detailString,sign=1)=>{
 		await robot.clickBack();
 		await common.awaitTime(2000)
 		await utils.cleanSkuRobot()
+
+
 		await utils.setAlreadyCaptureProductId("sold",product["product_id"])
 		idx += 1
 		await utils.setCurrentCaptureIndex(idx,sign)
+
+
 		await common.awaitTime(500)
 		checkHasCaptureProduct(products,idx)
 		await utils.searchSkuRobot(products[idx])
@@ -106,6 +111,8 @@ exports.handleSold = async (soldString,sign=1)=>{
 		await utils.setAlreadyCaptureProductId("sold",productId)
 		idx += 1
 		await utils.setCurrentCaptureIndex(idx,sign)
+
+
 		await robot.clickBack();
 		await common.awaitTime(2000)
 		await robot.clickBack();

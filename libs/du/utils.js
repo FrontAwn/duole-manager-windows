@@ -8,19 +8,22 @@ const database = require("../../utils/database.js")
 const config = require("../../config.js")
 const redis = database.getRedis()
 
-exports.getAlreadyCaptureProductId = async type=>{
+exports.getAlreadyCaptureProductId = async (type,sign="Default")=>{
 	let productIds = []
+	let key = ""
  	switch (type) {
  		case "list":
- 			productIds = await redis.get("du/self/alreadyCaptureByListProductIds")
+ 			key = `du/alreadyCaptureByListProductIds${sign}`
  			break;
  		case "detail":
- 			productIds = await redis.get("du/self/alreadyCaptureByDetailProductIds")
+ 			key = `du/alreadyCaptureByDetailProductIds${sign}`
  			break;
  		case "sold":
- 			productIds = await redis.get("du/self/alreadyCaptureBySoldProductIds")
+ 			key = `du/alreadyCaptureBySoldProductIds${sign}`
  			break;
  	}
+
+ 	productIds = await redis.get(key)
 
  	if ( productIds === null ) {
 		productIds = []
@@ -30,23 +33,19 @@ exports.getAlreadyCaptureProductId = async type=>{
 	return productIds
 }
 
-exports.setAlreadyCaptureProductId = async (type,productId)=>{
+exports.setAlreadyCaptureProductId = async (type,productId,sign="Default")=>{
 	let productIds = []
- 	let setKey = ""
+ 	let key = ""
 
 	switch (type) {
  		case "list":
- 			productIds = await redis.get("du/self/alreadyCaptureByListProductIds")
- 			setKey = "du/self/alreadyCaptureByListProductIds"
+ 			key = `du/alreadyCaptureByListProductIds${sign}`
  			break;
  		case "detail":
- 			productIds = await redis.get("du/self/alreadyCaptureByDetailProductIds")
- 			setKey = "du/self/alreadyCaptureByDetailProductIds"
-
+ 			key = `du/alreadyCaptureByDetailProductIds${sign}`
  			break;
  		case "sold":
- 			productIds = await redis.get("du/self/alreadyCaptureBySoldProductIds")
- 			setKey = "du/self/alreadyCaptureBySoldProductIds"
+ 			key = `du/alreadyCaptureBySoldProductIds${sign}`
  			break;
  	}
 
@@ -56,29 +55,28 @@ exports.setAlreadyCaptureProductId = async (type,productId)=>{
 		productIds = JSON.parse(productIds)
 		if ( !productIds.includes(productId) )	productIds.push(productId)
 	}
-	await redis.set(setKey,JSON.stringify(productIds))
+	await redis.set(key,JSON.stringify(productIds))
 }
 
-exports.cleanAlreadyCaptureProductId = async type=>{
-	let setKey = ""
+exports.cleanAlreadyCaptureProductId = async (type,sign="Default")=>{
+	let key = ""
  	switch (type) {
  		case "list":
- 			setKey = "du/self/alreadyCaptureByListProductIds"
+ 			key = `du/alreadyCaptureByListProductIds${sign}`
  			break;
  		case "detail":
- 			setKey = "du/self/alreadyCaptureByDetailProductIds"
-
+ 			key = `du/alreadyCaptureByDetailProductIds${sign}`
  			break;
  		case "sold":
- 			setKey = "du/self/alreadyCaptureBySoldProductIds"
+ 			key = `du/alreadyCaptureBySoldProductIds${sign}`
  			break;
  	}
- 	await redis.set(setKey,JSON.stringify([]))
+ 	await redis.set(key,JSON.stringify([]))
 }
 
 
 
-exports.getCurrentCaptureProduct = async (sign=1)=>{
+exports.getCurrentCaptureProduct = async (sign="Default")=>{
 	let product = await redis.get(`du/currentCaptureProduct${sign}`)
 	if ( product === null ) {
 		product = {}
@@ -88,16 +86,16 @@ exports.getCurrentCaptureProduct = async (sign=1)=>{
 	return product;
 }
 
-exports.setCurrentCaptureProduct = async (product,sign=1)=>{
+exports.setCurrentCaptureProduct = async (product,sign="Default")=>{
 	await redis.set(`du/currentCaptureProduct${sign}`,JSON.stringify(product))
 }
 
-exports.cleanCurrentCaptureProduct = async (sign=1)=>{
+exports.cleanCurrentCaptureProduct = async (sign="Default")=>{
 	await redis.set(`du/currentCaptureProduct${sign}`,JSON.stringify({}))
 }
 
 
-exports.getCurrentCaptureIndex = async (sign=1)=>{
+exports.getCurrentCaptureIndex = async (sign="Default")=>{
 	let idx = await redis.get(`du/currentCaptureIndex${sign}`)
 	if ( idx === null ) {
 		idx = 0
@@ -107,16 +105,16 @@ exports.getCurrentCaptureIndex = async (sign=1)=>{
 	return idx
 }
 
-exports.setCurrentCaptureIndex = async (idx,sign=1)=>{
+exports.setCurrentCaptureIndex = async (idx,sign="Default")=>{
 	await redis.set(`du/currentCaptureIndex${sign}`,idx)
 }
 
-exports.cleanCurrentCaptureIndex = async (sign=1)=>{
+exports.cleanCurrentCaptureIndex = async (sign="Default")=>{
 	await redis.set(`du/currentCaptureIndex${sign}`,0)
 }
 
 
-exports.getNeedCaptureProducts = async (sign=1)=>{
+exports.getNeedCaptureProducts = async (sign="Default")=>{
 	let products = await redis.get(`du/needCaptureProducts${sign}`)
 	if ( products === null ) {
 		products = [] 
@@ -126,17 +124,17 @@ exports.getNeedCaptureProducts = async (sign=1)=>{
 	return products
 }
 
-exports.setNeedCaptureProducts = async (products,sign=1)=>{
+exports.setNeedCaptureProducts = async (products,sign="Default")=>{
 	await redis.set(`du/needCaptureProducts${sign}`,JSON.stringify(products))
 }
 
-exports.cleanNeedCaptureProducts = async (sign=1)=>{
+exports.cleanNeedCaptureProducts = async (sign="Default")=>{
 	await redis.set(`du/needCaptureProducts${sign}`,JSON.stringify([]))
 }
 
 
-exports.getSoldDetail = async ()=>{
-	let soldDetail = await redis.get("du/soldDetail")
+exports.getSoldDetail = async (sign="Default")=>{
+	let soldDetail = await redis.get(`du/soldDetail${sign}`)
 	if ( soldDetail === null ) {
 		soldDetail = {}
 	} else {
@@ -145,12 +143,12 @@ exports.getSoldDetail = async ()=>{
 	return soldDetail
 }
 
-exports.setSoldDetail = async soldDetail=>{
-	await redis.set("du/soldDetail",JSON.stringify(soldDetail))
+exports.setSoldDetail = async (soldDetail,sign="Default")=>{
+	await redis.set(`du/soldDetail${sign}`,JSON.stringify(soldDetail))
 }
 
-exports.cleanSoldDetail = async ()=>{
-	await redis.set("du/soldDetail",JSON.stringify({}))
+exports.cleanSoldDetail = async (sign="Default")=>{
+	await redis.set(`du/soldDetail${sign}`,JSON.stringify({}))
 }
 
 
@@ -171,6 +169,31 @@ exports.setNewList = async newList=>{
 exports.cleanNewList = async ()=>{
 	await redis.set("du/newList",JSON.stringify({}))
 }
+
+
+exports.setCacheConfig = async (sign="Default")=>{
+	let cacheConfig = await redis.get(`du/cacheConfig${sign}`)
+	if ( cacheConfig === null ) {
+		cacheConfig = {}
+	} else {
+		cacheConfig = JSON.parse(cacheConfig)
+	}
+	return cacheConfig
+}
+
+exports.getCacheConfig = async (config,sign="Default")=>{
+	await redis.set(`du/cacheConfig${sign}`,JSON.stringify(config))
+}
+
+exports.cleanCacheConfig = async (sign="Default")=>{
+	await redis.set(`du/cacheConfig${sign}`,JSON.stringify({}))
+}
+
+
+
+
+
+
 
 
 
