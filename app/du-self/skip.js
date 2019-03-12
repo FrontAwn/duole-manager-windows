@@ -1,10 +1,11 @@
 const moment = require("moment")
 const request = require("../../utils/request.js")
 const common = require("../../utils/common.js")
-const CaptureUtils = require("../../libs/du/utils.js")
+const CaptureCache = require("../../libs/du/cache.js")
 
 const getNeedSkipSkus = async ()=>{
-	let skuList = await CaptureUtils.getNewList()
+	let skuList = await CaptureCache.getCacheHasMap("selfNewList",0,"newList");
+	skuList = JSON.parse(skuList)
 	if ( Object.keys(skuList).length > 0 ) {
 		let skipSkus = Object.keys(skuList)
 		return skipSkus
@@ -21,7 +22,7 @@ const setSikpSkus = async skus=>{
 			skus:JSON.stringify(skus)
 		}
 	})
-	await CaptureUtils.cleanNewList()
+	await CaptureCache.delCacheHasMap("selfNewList",0,"newList")
 	console.log(`[Notice]: 一共设置skip货号${skus.length}个`)
 	process.exit()
 }

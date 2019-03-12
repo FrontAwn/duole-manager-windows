@@ -3,10 +3,13 @@ const path = require("path")
 const common = require("../../utils/common.js")
 const request = require("../../utils/request.js")
 const response = require("../../utils/response.js")
-const CaptureUtils = require("../../libs/du/utils.js")
+const CaptureCache = require("../../libs/du/cache.js")
 const CaptureDetail = require("../../libs/du/captureDetail.js")
 
-const getNeedCaptureProducts = async ()=>{
+const cluster = require('cluster');
+const cpuNum = require('os').cpus().length;
+
+const getProducts = async ()=>{
 	let conditions = {
 		where:JSON.stringify({
 			type:2,
@@ -23,62 +26,84 @@ const getNeedCaptureProducts = async ()=>{
 	return res["data"]
 }
 
-const getRestProducts = async (needCaptureProducts,alreadyCaptureProductIds)=>{
-	let res = []
-	if ( alreadyCaptureProductIds.length === 0 ) {
-		res = common.deepCopy(needCaptureProducts)
-	} else {
-		for ( let [idx,content] of needCaptureProducts.entries() ) {
-			if ( !alreadyCaptureProductIds.includes(content["product_id"]) ) {
-				res.push(content)
-			}
+
+const getNeedCaptureProducts = async ()=>{
+
+	// await CaptureCache.delCacheHasMap("nikeDetail",0,"needCaptureProducts")
+
+	let needCaptureProducts = await CaptureCache.getCacheHasMap("nikeDetail",0,"needCaptureProducts")
+
+    if ( needCaptureProducts === null ) {
+    	needCaptureProducts = {}
+    } else {
+    	needCaptureProducts = JSON.parse(needCaptureProducts)
+    }
+
+    if ( Object.keys(needCaptureProducts).length === 0 ) {
+    	let products = await getProducts()
+		let chunkLenth = Math.ceil(products.length / cpuNum)
+		let chunks = common.spliceArray(products,chunkLenth)
+		for ( let [idx,products] of chunks.entries() ) {
+			let processId = new Date().getTime()
+			needCaptureProducts[processId] = chunks[idx]
+			await common.awaitTime(300)
 		}
-	}
-	return res;
+		await CaptureCache.setCacheHasMap("nikeDetail",0,"needCaptureProducts",JSON.stringify(needCaptureProducts))
+    } 
+
+    return needCaptureProducts;
+
 }
 
 
 ;(async ()=>{
 
-	await CaptureDetail({
-		captureBefore: async ()=>{
-			let conditions = {
-				where:JSON.stringify({
-					type:0
-				})
-			}
-			let res = await request({
-				url:"/du/self/getProductList",
-				data:conditions
-			})
+	
 
-			let datas = res["data"]
-			let length = datas.length
+	if (cluster.isMaster) {
 
-			if ( length > 0 ) {
-				console.log(`[Notice]: 当前存在个${length}新货号需要处理`)	
-				process.exit()
-			}
-		},
+		let needCaptureProducts = await getNeedCaptureProducts()
 
-		setCaptureProducts: async ()=>{
-			let needCaptureProducts = await getNeedCaptureProducts();
-			let alreadyCaptureProductIds = await CaptureUtils.getAlreadyCaptureProductId("detail")
-			let products = await getRestProducts(needCaptureProducts,alreadyCaptureProductIds)
-			return products;
-		},
+		for ( let [processId,products] of Object.entries(needCaptureProducts) ) {
+			let worker = cluster.fork()
+			worker.send({processId,needCaptureProducts})
+		}
 
-		getCaptureDetail: async detail=>{
-			await request({
-				url:"/du/nike/setProductDetail",
-				data:{
-					detail:JSON.stringify(detail),
+		cluster.on('message', async (worker,processId,handle)=>{
+			await common.awaitTime(1000)
+			delete needCaptureProducts[processId]
+			await CaptureCache.setCacheHasMap("nikeDetail",0,"needCaptureProducts",JSON.stringify(needCaptureProducts))
+			console.log(`[Notice]: ${processId}进程消除`)
+		})
+
+	} else {
+
+		async function start(datas){
+			let needCaptureProducts = common.deepCopy(datas["needCaptureProducts"])
+			let processId = datas.processId
+			let products = needCaptureProducts[processId]
+
+			await CaptureDetail({
+				setCaptureProducts:async ()=>products,
+				getCaptureDetail:async (detail,idx)=>{
+					await request({
+						url:"/du/nike/setProductDetail",
+						data:{
+							detail:JSON.stringify(detail),
+						}
+					})
+				},
+				captureAfter:async ()=>{
+					process.send(processId)
 				}
 			})
 		}
-	})
+
+		process.on("message",start)
+	}
 
 })()
+
 
 
 

@@ -4,7 +4,7 @@ const moment = require("moment")
 const common = require("../../utils/common.js")
 const request = require("../../utils/request.js")
 const response = require("../../utils/response.js")
-const CaptureUtils = require("../../libs/du/utils.js")
+const CaptureCache = require("../../libs/du/cache.js")
 const CaptureList = require("../../libs/du/captureList.js")
 const sign = require("../../config.js")["signEnv"]
 
@@ -43,7 +43,7 @@ const getCaptureList = async (list,sku)=>{
 }
 
 const captureAfter = async ()=>{
-	await CaptureUtils.setNewList(captureList)
+	await CaptureCache.setCacheHasMap("selfNewList",0,"newList",JSON.stringify(captureList))
 	console.log(`[Notice]: 一共添加了${Object.keys(captureList).length}条new货号信息`)
 	process.exit()
 }

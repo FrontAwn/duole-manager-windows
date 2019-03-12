@@ -63,6 +63,4 @@ const getProducts = async ()=>{
 		await CaptureRobot.start()
 	}
 
-	
-
 })()

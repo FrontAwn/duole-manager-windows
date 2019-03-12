@@ -3,37 +3,6 @@ const common = require("../../utils/common.js")
 const database = require("../../utils/database.js")
 const redis = database.getRedis()
 
-
-exports.getProcess = async (type)=>{
-	let processIds = await redis.get(`du/${type}/processIds`)
-	if ( processIds === null ) {
-		processIds = {}
-	} else {
-		processIds = JSON.parse(processIds)
-	}
-	return processIds;
-}
-
-exports.addProcess = async (type,processId)=>{
-	let key = `du/${type}/processIds`
-	let processIds = await exports.getProcess(type)
-	processIds[processId] = true
-	await redis.set(key,JSON.stringify(processIds))
-}
-
-exports.stopProcess = async (type,processId)=>{
-	let key = `du/${type}/processIds`
-	let processIds = await exports.getProcess(type)
-	if ( processIds[processId] ) processIds[processId] = false
-	await redis.set(key,JSON.stringify(processIds))
-}
-
-exports.cleanProcess = async (type)=>{
-	let key = `du/${type}/processIds`
-	await redis.set(key,JSON.stringify({}))
-}
-
-
 exports.getCacheHasMap = async (type,processId,key)=>{
 	let hasKey = `/du/${type}/${processId}`
 	let hasMap = await redis.hget(hasKey,key)

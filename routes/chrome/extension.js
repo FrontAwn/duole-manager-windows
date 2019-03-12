@@ -8,7 +8,7 @@ const NikeProductList = model.getNikeProductList()
 const SelfProductList = model.getSelfProductList()
 const SelfProductDetailTotal = model.getSelfProductDetailTotal()
 const routerGet = {}
-const CaptureUtils = require("../../libs/du/utils.js")
+const CaptureCache = require("../../libs/du/cache.js")
 
 routerGet.getSelfConfimProductIds = async ctx=>{
 	let res = await SelfProductList.findAll({
@@ -47,7 +47,8 @@ routerGet.putSelfConfimProductUrl = async ctx=>{
 
 
 routerGet.getSelfNewProductIds = async ctx=>{
-	let newList = await CaptureUtils.getNewList();
+	let newList = await CaptureCache.getCacheHasMap("selfNewList",0,"newList");
+	newList = JSON.parse(newList)
 	let productIds = []
 	if ( Object.keys(newList).length > 0 ) {
 		for (let [sku,ids] of Object.entries(newList)) {
@@ -61,7 +62,8 @@ routerGet.getSelfNewProductIds = async ctx=>{
 routerGet.putSelfNewProductUrl = async ctx=>{
 	let url = ctx.query.url
 
-	let newList = await CaptureUtils.getNewList();
+	let newList = await CaptureCache.getCacheHasMap("selfNewList",0,"newList");
+	newList = JSON.parse(newList)
 	let newSkus = Object.keys(newList)
 	let detailResponse = await common.httpGet(url)
 	let detail = response.parseProductDetail(detailResponse)
@@ -86,7 +88,7 @@ routerGet.putSelfNewProductUrl = async ctx=>{
 				})
 				delete newList[sku]
 			})
-			await CaptureUtils.setNewList(newList)
+			await CaptureCache.setCacheHasMap("selfNewList",0,"newList",JSON.stringify(newList))
 		}
 	}
 }
