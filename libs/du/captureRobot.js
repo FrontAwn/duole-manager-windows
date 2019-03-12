@@ -67,13 +67,13 @@ exports.handleList = async (listString,url)=>{
 	if ( list.length > 0 ) {
 		await robot.clickDetail(1)
 	} else {
-		if ( sku.length <= 12 ) {
+		if ( sku.length <= 15 ) {
 			next = true
 		}
 		let product = await getCaptureProduct(next)
 		await utils.cleanSkuRobot()
 		await common.awaitTime(500)
-		await utils.searchSkuRobot()
+		await utils.searchSkuRobot(product)
 	}
 }
 
