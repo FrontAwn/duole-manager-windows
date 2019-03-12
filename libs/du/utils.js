@@ -60,8 +60,11 @@ exports.parseSold = async (dateStrings=[],type,processId)=>{
 		for ( let [idx,content] of dateStrings.entries() ) {
 			let dateString = content["time"]
 			let size = ""
-			if ( isNaN(parseFloat(content["size"])) ) {
-				size = content["size"]
+			if ( 
+				isNaN(parseFloat(content["size"])) || 
+				parseFloat(content["size"]) < 30
+			) {
+				size = content["size"].replace("码","")
 			} else {
 				size = parseFloat(content["size"])
 			}
