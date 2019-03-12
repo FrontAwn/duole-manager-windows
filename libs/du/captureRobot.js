@@ -46,7 +46,7 @@ const getCaptureProduct = async (next=true)=>{
 }
 
 exports.start = async ()=>{
-	await getCurrentProcessId()
+	let processId = await getCurrentProcessId()
 	await cache.delCacheHasMap(type,processId,"currentCaptureSoldDetail")
 	await utils.readyStartRobot()
 	let product = await getCaptureProduct(false)
