@@ -63,7 +63,7 @@ exports.parseSold = async (dateStrings=[],type,processId)=>{
 			if ( isNaN(parseFloat(content["size"])) ) {
 				size = content["size"]
 			} else {
-				size = parseFloat(content["size"]
+				size = parseFloat(content["size"])
 			}
 			let date = common.parseDateString(dateString)
 			let {diff,format} = date
