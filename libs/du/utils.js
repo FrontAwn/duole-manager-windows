@@ -59,7 +59,12 @@ exports.parseSold = async (dateStrings=[],type,processId)=>{
 	if ( dateStrings.length > 0 ) {
 		for ( let [idx,content] of dateStrings.entries() ) {
 			let dateString = content["time"]
-			let size = parseFloat(content["size"])
+			let size = ""
+			if ( isNaN(parseFloat(content["size"])) ) {
+				size = content["size"]
+			} else {
+				size = parseFloat(content["size"]
+			}
 			let date = common.parseDateString(dateString)
 			let {diff,format} = date
 			if ( diff === 0 ) continue
