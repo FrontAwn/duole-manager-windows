@@ -12,6 +12,8 @@ const DuappResourceRemote = database.getMysql("DuappResource","remote")
 const SelfProductDetailTotalLocal = model.getModel("DuappResource","SelfProductDetailTotal","local")
 const SelfProductDetailTotalRemote = model.getModel("DuappResource","SelfProductDetailTotal","remote")
 
+const NikeProductDetailTotalRemote = model.getModel("DuappResource","NikeProductDetailTotal","remote")
+
 const ruleSoldJson = path.resolve(__dirname,"./json/ruleSold.json")
 
 
@@ -141,6 +143,15 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 	// }
 
 
+
+	// let details = await NikeProductDetailTotalRemote.findAll({
+	// 	raw:true,
+	// 	where:{
+	// 		"sold_detail":{
+	// 			"$ne":""
+	// 		}
+	// 	}
+	// })
 
 
 })()
