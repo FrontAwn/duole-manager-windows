@@ -47,11 +47,13 @@ const getCaptureProduct = async (next=true)=>{
 
 exports.start = async ()=>{
 	await getCurrentProcessId()
+	await cache.delCacheHasMap(type,processId,"currentCaptureSoldDetail")
 	await utils.readyStartRobot()
 	let product = await getCaptureProduct(false)
 	if ( product === null ) {
 		product = await getCaptureProduct(true)
 	}
+
 	await utils.searchSkuRobot(product)
 }
 
