@@ -110,11 +110,14 @@ routerGet.getNikeNewProductIds = async ctx=>{
 
 routerGet.putNikeNewProductUrl = async ctx=>{
 	let url = ctx.query.url
+	let detailResponse = await common.httpGet(url)
+	let detail = response.parseProductDetail(detailResponse)
 	let urlObject = common.urlParse(url)
-	let query = common.qsParse(urlObject['query'])
-	let productId = query['productId']
+	let sku = detail["sku"]
+	let productId = detail["product_id"]
 	let res = {
-		"url":url,
+		sku,
+		url,
 		"type":2
 	}
 	await DuappResource.transaction(async t=>{

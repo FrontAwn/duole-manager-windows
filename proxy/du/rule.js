@@ -1,16 +1,28 @@
 const path = require("path")
 const common = require("../../utils/common.js")
 const database =require("../../utils/database.js")
-const ruleDetailJson = path.resolve(__dirname,"../../json/ruleDetail.json")
-const ruleSoldJson = path.resolve(__dirname,"../../json/ruleSold.json")
-const ruleListJson = path.resolve(__dirname,"../../json/ruleList.json")
-
+const config = require("../../config.js")
 const redis = database.getRedis()
 const CaptureRobot = require("../../libs/du/captureRobot.js")
-const CaptureUtils = require("../../libs/du/utils.js")
+const CaptureCache = require("../../libs/du/cache.js")
+var processId = new Date().getTime()
+var type = config["soldConfig"]["type"] 
 
+const ruleProcessJson = path.resolve(__dirname,"../../json/ruleProcess.json")
 
-var watchState = false
+;(async ()=>{
+		let ruleProcessContent = await common.readFile(ruleProcessJson)
+		ruleProcessContent = JSON.parse(ruleProcessContent.toString())
+		if ( ruleProcessContent["processId"] === null ) {
+			ruleProcessContent["processId"] = processId
+			await common.writeFile(ruleProcessJson,JSON.stringify(ruleProcessContent))
+		} else {
+			processId = ruleProcessContent["processId"]
+		}
+	
+})()
+
+var watchState = true
 
 module.exports = {
 	async beforeSendResponse(requestDetail, responseDetail) {
@@ -25,7 +37,6 @@ module.exports = {
 				// 修改response结果
 				let body = JSON.parse(newResponse.body.toString())
 
-				common.writeFile(ruleDetailJson,newResponse.body.toString())
 				CaptureRobot.handleDetail( newResponse.body.toString() )
 
 				body['data']['detail']['title'] = ""
@@ -46,7 +57,6 @@ module.exports = {
 			let soldBody = responseDetail.response.body.toString()
 
 			if ( watchState ) {
-				common.writeFile(ruleSoldJson,soldBody)
 				CaptureRobot.handleSold(soldBody)	
 			}
 			
@@ -64,8 +74,11 @@ module.exports = {
 			if ( watchState ) {
 				// 修改response结果
 				let body = JSON.parse(newResponse.body.toString())
-				let currentCaptureProduct = await CaptureUtils.getCurrentCaptureProduct()
+				let currentCaptureProduct = await CaptureCache.getCacheHasMap(type,processId,"currentCaptureProduct")
+				currentCaptureProduct = JSON.parse(currentCaptureProduct)
 				let currentCaptureProductId = currentCaptureProduct["product_id"]
+
+
 				let productList = []
 				if ( currentCaptureProductId !== null && body["data"]["productList"].length !==0 ) {
 					for ( let [idx,content] of body["data"]["productList"].entries() ) {
@@ -77,8 +90,6 @@ module.exports = {
 				body["data"]["productList"] = productList
 				newResponse.body = JSON.stringify(body)
 
-
-				common.writeFile(ruleListJson,newResponse.body)
 				CaptureRobot.handleList(newResponse.body,requestDetail.url)
 			}
 

@@ -30,7 +30,23 @@ routerGet.getProductList = async ctx=>{
 }
 
 routerGet.getProductsDetail = async ctx=>{
-
+	let query = ctx.query
+	let where = query['where'] ? JSON.parse(query['where']) : {
+		id:{
+			"$gt":0
+		}
+	}
+	let attrs = query["attrs"] ? JSON.parse(query["attrs"]) : ["*"]
+	let order = query["order"] ? JSON.parse(query["order"]) : []
+	let group = query["group"] || ""
+	let res = await NikeProductDetailTotal.findAll({
+		where,
+		attributes:attrs,
+		order,
+		group,
+		raw:true
+	})
+	ctx.body = res
 }
 
 routerGet.addProductList = async ctx=>{
@@ -81,6 +97,38 @@ routerGet.setProductDetail = async ctx=>{
 	})
 }
 
+
+
+routerPost.setProductSoldDetail = async ctx=>{
+	let body = ""
+
+	let end = async ()=>{
+		body = JSON.parse(body)
+		let { productId, soldDetail} = body
+		console.log(`存储货号: ${productId}`)
+		console.log(`存储信息: ${soldDetail}`)
+		for (let [createAt,detail] of Object.entries(soldDetail)) {
+			let res = {
+				"sold_detail":JSON.stringify(detail)
+			}
+			await DuappResource.transaction(async t=>{
+				await NikeProductDetailTotal.update(res,{
+					where:{
+						"product_id":productId,
+						"create_at":createAt
+					},
+					transaction:t
+				})
+			})
+		}
+	}
+
+	ctx.req.on("data",chunk=>{
+		body += chunk
+	})
+	ctx.req.on("end",end)
+
+}
 
 
 exports.get = routerGet

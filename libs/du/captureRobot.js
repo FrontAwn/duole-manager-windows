@@ -1,5 +1,5 @@
 const fs = require("fs")
-const moment = require("moment")
+const path = require("path")
 const config = require("../../config.js")
 const robot = require("../../utils/robot.js")
 const common = require("../../utils/common.js")
@@ -8,71 +8,79 @@ const response = require("../../utils/response.js")
 const database = require("../../utils/database.js")
 const utils = require("./utils.js")
 const redis = database.getRedis()
-const config = require("../../config.js")
+const cache = require("./cache.js")
 
 
-const checkHasCaptureProduct = async (products,idx)=>{
-	if ( !products[idx] ) {
-		console.log(`[Notice]: ------------ 所有货号抓取完毕 ------------`)
-		process.exit()
+var currentProcessId = null
+const type = config["soldConfig"]["type"]
+
+const getCurrentProcessId = async ()=>{
+	let processContent = await common.readFile(path.resolve(__dirname,"../../json/ruleProcess.json"))
+	return JSON.parse(processContent.toString())["processId"]
+}
+
+const getCaptureProduct = async (next=true)=>{
+	let product = null
+	let key = ""
+	let processId = null
+	if ( currentProcessId !== null ) {
+		processId = currentProcessId
+	} else {
+		processId = await getCurrentProcessId()
 	}
+	if ( next ) {
+		key = "needCaptureProducts"
+		product = await cache.popCacheLinked(type,0,key)
+		if ( product !== null ) {
+			await cache.setCacheHasMap(type,processId,"currentCaptureProduct",product)
+		} else {
+			console.log('[Notice]: 没有更多货号，请重新抓取')
+			process.exit()
+		}
+	} else {
+		key = "currentCaptureProduct"
+		product = await cache.getCacheHasMap(type,processId,key)
+	}
+	return JSON.parse(product)
 }
 
-
-exports.start = async (products,sign=1)=>{
-	let idx = 0
-	await utils.setCurrentCaptureIndex(idx)
-	await utils.setNeedCaptureProducts(products,sign)
-	await utils.setCurrentCaptureProduct(products[idx],sign)
+exports.start = async ()=>{
+	await getCurrentProcessId()
 	await utils.readyStartRobot()
-	await utils.searchSkuRobot(products[idx])
+	let product = await getCaptureProduct()
+	await utils.searchSkuRobot(product)
 }
 
-exports.handleList = async (listString,url,sign=1)=>{
+exports.handleList = async (listString,url)=>{
 	let list = response.parseProductList(listString)
-	let products = await utils.getNeedCaptureProducts(sign)
-	let idx = await utils.getCurrentCaptureIndex(sign)
-	let product = products[idx]
 	url = common.urlParse(url)
 	let query = common.qsParse(url["query"])
 	let sku = query["title"]
+	let next = false
 	await common.awaitTime(1200)
 	if ( list.length > 0 ) {
 		await robot.clickDetail(1)
 	} else {
 		if ( sku.length <= 12 ) {
-			await utils.setAlreadyCaptureProductId("sold",product["product_id"])
-			idx += 1
-			await utils.setCurrentCaptureIndex(idx,sign)
+			next = true
 		}
+		let product = await getCaptureProduct(next)
 		await utils.cleanSkuRobot()
 		await common.awaitTime(500)
-		checkHasCaptureProduct(products,idx)
-		await utils.searchSkuRobot(products[idx])
+		await utils.searchSkuRobot()
 	}
 }
 
 exports.handleDetail = async (detailString,sign=1)=>{
 	let detail = response.parseProductDetail(detailString)
-	let products = await utils.getNeedCaptureProducts(sign)
-	let idx = await utils.getCurrentCaptureIndex(sign)
-	let product = products[idx]
-
 	await common.awaitTime(1200)
 	if ( detail["sold_total"] <= 5 ) {
 		await robot.clickBack();
 		await common.awaitTime(2000)
 		await utils.cleanSkuRobot()
-
-
-		await utils.setAlreadyCaptureProductId("sold",product["product_id"])
-		idx += 1
-		await utils.setCurrentCaptureIndex(idx,sign)
-
-
+		let product = await getCaptureProduct(true)
 		await common.awaitTime(500)
-		checkHasCaptureProduct(products,idx)
-		await utils.searchSkuRobot(products[idx])
+		await utils.searchSkuRobot(product)
 	} else {
 		await robot.clickTotalSold()
 	}
@@ -81,46 +89,38 @@ exports.handleDetail = async (detailString,sign=1)=>{
 
 exports.handleSold = async (soldString,sign=1)=>{
 	let sold = response.parseProductSold(soldString)
-	let products = await utils.getNeedCaptureProducts(sign)
-	let idx = await utils.getCurrentCaptureIndex(sign)
-	let soldDetail = await utils.getSoldDetail()
-	let product = products[idx]
-	let productId = product["product_id"]
-	
-	if ( Object.keys(soldDetail).length === 0 ) {
-		await common.awaitTime(1200)	
-	}
-
-	let res = await utils.parseSold(sold)
+	let processId = await getCurrentProcessId()
+	let soldDetail = await cache.getCacheHasMap(type,processId,"currentCaptureSoldDetail")
+	let currentProduct = await getCaptureProduct(false)
+	let productId = currentProduct["product_id"]
+	if ( soldDetail === null ) {
+		await common.awaitTime(1200)
+	} 
+	let res = await utils.parseSold(sold,type,processId)
 	if ( res === null ) {
 		await robot.rollWindow()
 		await common.awaitTime(300)
 		await robot.rollWindow()
 	} else {
-		await utils.cleanSoldDetail(sign)
-		res = JSON.stringify(res)
+		let soldDetail = JSON.stringify(res)
+		let url = config["soldConfig"]["saveUrl"]
 		await request({
 			method:"post",
-			url:"/du/self/setProductSoldDetail",
+			url,
 			data:{
 				productId,
 				soldDetail:res,
 			}
 		})
-
-		await utils.setAlreadyCaptureProductId("sold",productId)
-		idx += 1
-		await utils.setCurrentCaptureIndex(idx,sign)
-
-
 		await robot.clickBack();
 		await common.awaitTime(2000)
 		await robot.clickBack();
 		await common.awaitTime(2000)
 		await utils.cleanSkuRobot()
 		await common.awaitTime(500)
-		checkHasCaptureProduct(products,idx)
-		await utils.searchSkuRobot(products[idx])
+		await cache.delCacheHasMap(type,processId,"currentCaptureSoldDetail")
+		let nextProduct = await getCaptureProduct(true)
+		await utils.searchSkuRobot(nextProduct)
 	}
 }
 

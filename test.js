@@ -15,7 +15,7 @@ const SelfProductDetailTotalRemote = model.getModel("DuappResource","SelfProduct
 const ruleSoldJson = path.resolve(__dirname,"./json/ruleSold.json")
 
 
-const CaptureUtils = require("./libs/du/utils.js")
+const CaptureCache = require("./libs/du/cache.js")
 
 // 把本地du数据同步到线上
 const asnycSelfProductDetailsToRemote = async ()=>{
@@ -94,6 +94,55 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 	// await request({
 	// 	url:"/chrome/extension/getSelfNewProductIds"
 	// })
+
+	// let detailResponse = await request({
+	// 	url:"/du/nike/getProductsDetail",
+	// 	data:{
+	// 		where:JSON.stringify({
+	// 			create_at:moment().format("YYYY-MM-DD"),
+	// 		}),
+	// 		attrs:JSON.stringify(["sku","product_id"])
+	// 	}
+	// })
+	// let details = detailResponse["data"]
+	// details = common.indexBy(details,"product_id")
+
+	// let listResponse = await request({
+	// 	url:"/du/nike/getProductList",
+	// 	data:{
+	// 		where:JSON.stringify({
+	// 			sku:"",
+	// 			type:2
+	// 		}),
+	// 		attrs:JSON.stringify(["product_id"])
+	// 	}
+	// })
+
+	// let list = listResponse["data"]
+	// for ( let [idx,content] of list.entries() ) {
+	// 	if ( details[content["product_id"]] ) {
+	// 		console.log()
+	// 		let update = {
+	// 			sku:details[content["product_id"]]["sku"]
+	// 		}
+
+	// 		await request({
+	// 			url:"/du/nike/updateProductList",
+	// 			data:{
+	// 				where:JSON.stringify({
+	// 					product_id:content["product_id"]
+	// 				}),
+	// 				content:JSON.stringify(update)
+	// 			}
+	// 		})
+
+	// 		await common.awaitTime(300)
+	// 	}
+	// }
+
+
+
+
 })()
 
 
