@@ -34,6 +34,7 @@ const getCaptureProduct = async (next=true)=>{
 		if ( product !== null ) {
 			await cache.setCacheHasMap(type,processId,"currentCaptureProduct",product)
 		} else {
+			await cache.delCacheHasMap(type,processId,"currentCaptureProduct")
 			console.log('[Notice]: 没有更多货号，请重新抓取')
 			process.exit()
 		}
@@ -47,7 +48,10 @@ const getCaptureProduct = async (next=true)=>{
 exports.start = async ()=>{
 	await getCurrentProcessId()
 	await utils.readyStartRobot()
-	let product = await getCaptureProduct()
+	let product = await getCaptureProduct(false)
+	if ( product === null ) {
+		product = await getCaptureProduct(true)
+	}
 	await utils.searchSkuRobot(product)
 }
 
