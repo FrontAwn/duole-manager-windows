@@ -7,7 +7,7 @@ module.exports = {
 
 		// "current"
 		// "history"
-		mode:"current",
+		mode:"history",
 
 
 		getProductListRequestConfig:{

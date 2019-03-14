@@ -182,7 +182,7 @@ const getNeedCaptureProductDetail = async product=>{
 	
 		await setNeedCaptureProducts()
 		// cpuNum
-		for (let idx=1; idx <= 1; idx++) {
+		for (let idx=1; idx <= cpuNum; idx++) {
 			await common.awaitTime(500)
 			let worker = cluster.fork()
 			worker.on("message",onWorkerMessage)
