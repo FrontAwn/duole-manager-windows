@@ -27,12 +27,11 @@ const conditions = config["soldEnv"]["conditions"] || {
 	}),
 }
 
+const getProductListRequestConfig = config["soldEnv"]["getProductListRequestConfig"]
+
 const getProducts = async ()=>{
 
-	let res = await request({
-		url:"/du/sell/getProductList",
-		data:conditions
-	})
+	let res = await request(getProductListRequestConfig)
 
 	let datas = res["data"]
 
@@ -182,7 +181,8 @@ const getNeedCaptureProductDetail = async product=>{
 		// await CaptureCache.cleanCacheLinked(type,0,"cacheCaptureProducts")
 	
 		await setNeedCaptureProducts()
-		for (let idx=1; idx <= cpuNum; idx++) {
+		// cpuNum
+		for (let idx=1; idx <= 1; idx++) {
 			await common.awaitTime(500)
 			let worker = cluster.fork()
 			worker.on("message",onWorkerMessage)
@@ -198,7 +198,7 @@ const getNeedCaptureProductDetail = async product=>{
 		async function nextCapture() {
 			
 			let product = await getNeedCaptureProduct()
-			// let product = { product_id: '23520',sku: 'DV1592'}
+			// let product = { product_id: '2351',sku: '130690-617'}
 
 			product = await getNeedCaptureProductDetail(product)
 
@@ -226,22 +226,20 @@ const getNeedCaptureProductDetail = async product=>{
 							sold,
 							lastId,
 						)
-
-					if ( !state ) {
-						process.send({
-							event:"del",
-							content:{
-								product
-							}
-						})
-						console.log(`[Notice]: ${product["sku"]}抓取完成!!!`)
-						let needCaptureProductsLength = await CaptureCache.getCacheLinkedLength(type,0,"needCaptureProducts")
-						console.log(`[Notice]: 当前还要抓取${needCaptureProductsLength}个货号`)
-						await nextCapture()
-						return state
-					} 
-
 					return state
+				},
+
+				captureAfter:async ()=>{
+					process.send({
+						event:"del",
+						content:{
+							product
+						}
+					})
+					console.log(`[Notice]: ${product["sku"]}抓取完成!!!`)
+					let needCaptureProductsLength = await CaptureCache.getCacheLinkedLength(type,0,"needCaptureProducts")
+					console.log(`[Notice]: 当前还要抓取${needCaptureProductsLength}个货号`)
+					await nextCapture()
 				}
 			})
 		}

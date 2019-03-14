@@ -38,6 +38,7 @@ module.exports = async (options)=>{
 	let state = true
 	let product = options["product"] || null
 	let getProductSold = options["getProductSold"] || null
+	let captureAfter = options["captureAfter"] || null
 
 	if ( product === null ) {
 		console.log("[Notice]: 请传入要抓取的product")
@@ -68,5 +69,17 @@ module.exports = async (options)=>{
 
 	}
 
+	if ( captureAfter !== null && typeof captureAfter === "function" ) {
+		await captureAfter()
+	}
 
 }
+
+
+
+
+
+
+
+
+

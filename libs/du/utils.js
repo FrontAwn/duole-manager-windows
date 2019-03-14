@@ -18,8 +18,6 @@ exports.readyStartRobot = async ()=>{
 exports.searchSkuRobot = async (product,type)=>{
 	let sku = product["sku"]
 	let productId = product["product_id"]
-	// console.log(`[Notice]: 当前货号: ${sku}`)
-	// console.log(`[Notice]: 当前产品id: ${productId}`)
 	await robot.clickSearchInput()
 	await common.awaitTime(500)
 	await robot.inputContent(sku)
@@ -43,6 +41,7 @@ exports.rollSoldRobot = async ()=>{
 
 var soldMap = {}
 var currentDate = null
+const setProductSoldRequestConfig = config["soldEnv"]["setProductSoldRequestConfig"]
 
 exports.parseSoldHistory = async(product,sold,lastId)=>{
     
@@ -54,13 +53,15 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
 
     if ( typeof stopDate === "number" ) {
         stopDate = moment(startDate).subtract((stopDate+1),'day').format("YYYY-MM-DD")
-    } else {
-        stopDate = moment(stopDate).subtract(1,'day').format("YYYY-MM-DD")
     }
+
+    let stopDateNum = parseInt( moment(stopDate).format("YYYYMMDD") )
 
     for ( let [idx,content] of sold.entries() ) {
 
         let {format,diff} = common.parseDateString(content["date"])
+
+        let formatNum = parseInt( moment(format).format("YYYYMMDD") )
 
         if ( diff === 0 ) continue;
 
@@ -71,8 +72,9 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
         let size = content["size"]
 
         if ( format !== currentDate ) {
+            if ( lastId === null ) lastId = ""
             await request({
-                url:"/du/sell/updateProductSoldDetail",
+                url:setProductSoldRequestConfig["url"],
                 data:{
                     product:JSON.stringify(product),
                     sold:JSON.stringify(soldMap),
@@ -80,7 +82,7 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
                     createAt:currentDate,
                 }
             })
-            if ( format === stopDate ) {
+            if ( stopDateNum > formatNum ) {
                 currentDate = null
                 soldMap = {}
                 return false
