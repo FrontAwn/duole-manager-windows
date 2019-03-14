@@ -7,19 +7,19 @@ module.exports = {
 
 		// "current"
 		// "history"
-		mode:"history",
+		mode:"current",
 
 		conditions:{
 			attrs:JSON.stringify(["product_id","sku"]),
 			where:JSON.stringify({
 				type:2,
-				"sold_num":{
-					"$between":[10,10000]
-				}
+				// "sold_num":{
+				// 	"$between":[10,10000]
+				// }
 			}),
 		},
 
-		stopDate:5,
+		stopDate:25,
 
 	}
 }

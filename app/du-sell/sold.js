@@ -20,8 +20,6 @@ const type = config["soldEnv"]["type"] || "sellSold"
 
 const mode = config["soldEnv"]["mode"] || "current"
 
-const clean = false
-
 const conditions = config["soldEnv"]["conditions"] || {
 	attrs:JSON.stringify(["product_id","sku","sold_num"]),
 	where:JSON.stringify({
@@ -179,12 +177,12 @@ const getNeedCaptureProductDetail = async product=>{
 	if ( cluster.isMaster ) {
 
 		// 主进程
-
-		if (clean) {
-			await cleanProducts()
-		}
+		
+		// await cleanProducts()
+		// await CaptureCache.cleanCacheLinked(type,0,"cacheCaptureProducts")
+	
 		await setNeedCaptureProducts()
-		for (let idx=1; idx <= 1; idx++) {
+		for (let idx=1; idx <= cpuNum; idx++) {
 			await common.awaitTime(500)
 			let worker = cluster.fork()
 			worker.on("message",onWorkerMessage)
@@ -199,8 +197,8 @@ const getNeedCaptureProductDetail = async product=>{
 
 		async function nextCapture() {
 			
-			// let product = await getNeedCaptureProduct()
-			let product = { product_id: '23520',sku: 'DV1592'}
+			let product = await getNeedCaptureProduct()
+			// let product = { product_id: '23520',sku: 'DV1592'}
 
 			product = await getNeedCaptureProductDetail(product)
 
@@ -223,7 +221,6 @@ const getNeedCaptureProductDetail = async product=>{
 			await CaptureSold({
 				product,
 				getProductSold:async (sold,lastId)=>{
-					// console.log(sold)
 					let state = await CaptureUtils.parseSoldHistory(
 							product,
 							sold,
@@ -240,7 +237,7 @@ const getNeedCaptureProductDetail = async product=>{
 						console.log(`[Notice]: ${product["sku"]}抓取完成!!!`)
 						let needCaptureProductsLength = await CaptureCache.getCacheLinkedLength(type,0,"needCaptureProducts")
 						console.log(`[Notice]: 当前还要抓取${needCaptureProductsLength}个货号`)
-						// await nextCapture()
+						await nextCapture()
 						return state
 					} 
 
