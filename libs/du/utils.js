@@ -52,9 +52,10 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
 
     let stopDate = product["stopDate"] || 1
 
-    if ( typeof stopDate === "string") {
-        stopDate = moment(startDate).diff(stopDate,'day')
-        console.log(stopDate)
+    if ( typeof stopDate === "number" ) {
+        stopDate = moment(startDate).subtract((stopDate+1),'day').format("YYYY-MM-DD")
+    } else {
+        stopDate = moment(stopDate).subtract(1,'day').format("YYYY-MM-DD")
     }
 
     for ( let [idx,content] of sold.entries() ) {
@@ -73,13 +74,13 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
             await request({
                 url:"/du/sell/updateProductSoldDetail",
                 data:{
-                    soldMap:JSON.stringify(soldMap),
-                    createAt:currentDate,
+                    product:JSON.stringify(product),
+                    sold:JSON.stringify(soldMap),
                     lastId,
-                    sku:product["sku"]
+                    createAt:currentDate,
                 }
             })
-            if ( diff > stopDate ) {
+            if ( format === stopDate ) {
                 currentDate = null
                 soldMap = {}
                 return false

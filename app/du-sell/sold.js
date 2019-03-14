@@ -133,7 +133,7 @@ const getNeedCaptureProductDetail = async product=>{
 			where["create_at"] = {
 				"$ne":moment().format("YYYY-MM-DD")
 			}
-			where["sold_detail"] = ""
+			where["sold_last_id"] = ""
 			details["startDate"] = moment().format("YYYY-MM-DD")
 			break;
 		case "history":
@@ -200,9 +200,11 @@ const getNeedCaptureProductDetail = async product=>{
 		async function nextCapture() {
 			
 			// let product = await getNeedCaptureProduct()
-			let product = { product_id: '16094',sku: '852542-002'}
+			let product = { product_id: '23520',sku: 'DV1592'}
 
 			product = await getNeedCaptureProductDetail(product)
+
+			console.log(product)
 
 			if ( product === null ) {
 				console.log(`[Notice]: 当前货号没有最新销量纪录，请隔天再抓`)
@@ -216,12 +218,12 @@ const getNeedCaptureProductDetail = async product=>{
 				}
 			})
 
-			console.log(product)
+			
 
 			await CaptureSold({
 				product,
 				getProductSold:async (sold,lastId)=>{
-					console.log(sold)
+					// console.log(sold)
 					let state = await CaptureUtils.parseSoldHistory(
 							product,
 							sold,

@@ -136,19 +136,24 @@ var currentProduct = null
 
 routerGet.updateProductSoldDetail = async ctx=>{
 	let query = ctx.query
-	let soldMap = JSON.parse(query["soldMap"])
-	let sku = query["sku"]
+	let sold = JSON.parse(query["sold"])
+	let product = JSON.parse(query["product"])
 	let createAt = query["createAt"]
 	let lastId = query["lastId"]
+	let soldNum = 0
+
+	let productId = product["product_id"]
+	let sku = product["sku"]
 
 	if ( currentSku === null ) currentSku = sku
-	if ( currentDate === createAt ) currentDate = createAt
+	if ( currentDate === null ) currentDate = createAt
 
 	console.log()
 	console.log("---------------")
 	console.log("货号:",sku)
 	console.log("日期:",createAt)
-	console.log("销量:",soldMap)
+	console.log("lastId:",lastId)
+	console.log("销量:",sold)
 	console.log("---------------")
 	console.log()
 
@@ -163,12 +168,21 @@ routerGet.updateProductSoldDetail = async ctx=>{
 				"create_at":createAt,
 			}
 		})
+		currentDate = createAt
+		currentSku = sku
+	}
+
+
+	for ( let [size,num] of Object.entries(sold) ) {
+		soldNum += num
 	}
 
 
 	let saveData = {
 		"sku":sku,
-		"sold_detail":JSON.stringify(soldMap),
+		"product_id":productId,
+		"sold_detail":JSON.stringify(sold),
+		"sold_num":soldNum,
 		"sold_last_id":lastId,
 		"create_at":createAt,
 	}

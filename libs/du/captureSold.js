@@ -62,9 +62,9 @@ module.exports = async (options)=>{
 
 		let soldDetail = response.parseProductSold(res)
 
-		lastId = soldDetail["lastId"]
-
 		state = await getProductSold(soldDetail["list"],lastId)
+
+		lastId = soldDetail["lastId"]
 
 	}
 
