@@ -139,6 +139,9 @@ const getNeedCaptureProductDetail = async product=>{
 			}
 			details["stopDate"] = config["soldEnv"]["stopDate"]
 			break;
+		case "custom":
+			
+			break;
 	}
 
 	conditions["where"] = JSON.stringify(where)
