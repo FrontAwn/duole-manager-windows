@@ -48,3 +48,24 @@ exports.cleanCacheLinked = async (type,processId,key)=>{
 	let linkedKey = `/du/${type}/${processId}/${key}`
 	await redis.del(linkedKey)
 }
+
+exports.delCacheLinked = async(type,processId,key,num,value)=>{
+	let linkedKey = `/du/${type}/${processId}/${key}`
+	await redis.lrem(linkedKey,num,value)
+}
+
+exports.getCacheString = async(type,processId,key)=>{
+	let linkedKey = `/du/${type}/${processId}/${key}`
+	let res = await redis.get(linkedKey)
+	return res
+}
+
+exports.setCacheString = async(type,processId,key,value)=>{
+	let linkedKey = `/du/${type}/${processId}/${key}`
+	await redis.set(linkedKey,value)
+}
+
+exports.delCacheString = async(type,processId,key)=>{
+	let linkedKey = `/du/${type}/${processId}/${key}`
+	await redis.del(linkedKey)
+}

@@ -2,50 +2,6 @@ const Sequelize = require('sequelize');
 let { STRING, DOUBLE, DATE, INTEGER } = Sequelize
 
 const modelConfig = {
-	"NikeProductList":{
-		tableName:"nike_product_list",
-		structure:{
-			id:{
-				type:INTEGER(11).UNSIGNED,
-				primaryKey:true,
-				autoIncrement:true,
-			},
-			product_id:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:"",
-			},
-			title:{
-				type:STRING(300),
-				allowNull:false,
-				defaultValue:'',
-			},
-			url:{
-				type:STRING(500),
-				allowNull:false,
-				defaultValue:'',
-			},
-			sku:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:"",
-			},
-			type:{
-				type:INTEGER(4).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
-			},
-			create_at:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:'',
-			},
-		},
-		extra: {
-			tableName:"nike_product_list",
-			timestamps: false,	
-		}
-	},
 	"SelfProductList":{
 		tableName:"self_product_list",
 		structure:{
@@ -87,159 +43,6 @@ const modelConfig = {
 		},
 		extra: {
 			tableName:"self_product_list",
-			timestamps: false,	
-		}
-	},
-	"DuSkuList":{
-		tableName:"du_sku_list",
-		structure:{
-			id:{
-				type:INTEGER(11).UNSIGNED,
-				primaryKey:true,
-				autoIncrement:true,
-			},
-			sku:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			type:{
-				type:INTEGER(4).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
-			},
-
-			state:{
-				type:INTEGER(4).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
-			},
-
-			total:{
-				type:INTEGER(4).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
-			},
-
-			total_name:{
-				type:STRING(2000),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			target_name:{
-				type:STRING(200),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			image:{
-				type:STRING(200),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			offset:{
-				type:INTEGER(4).UNSIGNED,
-				allowNull:false,
-				defaultValue:1,
-			},
-
-			except_content:{
-				type:STRING(300),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			create_time:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			update_time:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:'',
-			},
-		},
-		extra: {
-			tableName:"du_sku_list",
-			timestamps: false,	
-		}
-	},
-	"DuSkuDetail":{
-		tableName:"du_sku_detail",
-		structure:{
-			id:{
-				type:INTEGER(11).UNSIGNED,
-				primaryKey:true,
-				autoIncrement:true,
-			},
-
-			sku:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			item_id:{
-				type:INTEGER(11).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
-			},
-
-			price:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			product_id:{
-				type:INTEGER(11).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
-			},
-
-			title:{
-				type:STRING(200),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			size_list:{
-				type:STRING(3000),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			sold_num:{
-				type:INTEGER(11).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
-			},
-
-			sell_date:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			sold_num:{
-				type:INTEGER(4).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
-			},
-
-			update_time:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:'',
-			},
-		},
-		extra: {
-			tableName:"du_sku_detail",
 			timestamps: false,	
 		}
 	},
@@ -322,8 +125,65 @@ const modelConfig = {
 			timestamps: false,	
 		}
 	},
-	"NikeProductDetailTotal":{
-		tableName:"nike_product_detail_total",
+
+	"SellProductList":{
+		tableName:"sell_product_list",
+		structure:{
+			id:{
+				type:INTEGER(11).UNSIGNED,
+				primaryKey:true,
+				autoIncrement:true,
+			},
+			product_id:{
+				type:STRING(100),
+				allowNull:false,
+				defaultValue:"",
+			},
+			title:{
+				type:STRING(300),
+				allowNull:false,
+				defaultValue:'',
+			},
+			url:{
+				type:STRING(500),
+				allowNull:false,
+				defaultValue:'',
+			},
+			sku:{
+				type:STRING(100),
+				allowNull:false,
+				defaultValue:"",
+			},
+			type:{
+				type:INTEGER(4).UNSIGNED,
+				allowNull:false,
+				defaultValue:0,
+			},
+			brand:{
+				type:INTEGER(4).UNSIGNED,
+				allowNull:false,
+				defaultValue:0,
+			},	
+			sold_num:{
+				type:STRING(100),
+				allowNull:false,
+				defaultValue:'',
+			},
+			create_at:{
+				type:STRING(100),
+				allowNull:false,
+				defaultValue:'',
+			},
+		},
+		extra: {
+			tableName:"sell_product_list",
+			timestamps: false,	
+		}
+	},
+
+
+	"SellProductDetailTotal":{
+		tableName:"sell_product_detail_total",
 		structure:{
 			id:{
 				type:INTEGER(11).UNSIGNED,
@@ -332,12 +192,6 @@ const modelConfig = {
 			},
 
 			sku:{
-				type:STRING(100),
-				allowNull:false,
-				defaultValue:'',
-			},
-
-			item_id:{
 				type:STRING(100),
 				allowNull:false,
 				defaultValue:'',
@@ -373,22 +227,27 @@ const modelConfig = {
 				defaultValue:'',
 			},
 
-			sold_today_num:{
+			sold_num:{
 				type:STRING(100),
 				allowNull:false,
 				defaultValue:'',
 			},
 
 			sold_detail:{
-				type:STRING(1000),
+				type:STRING(5000),
 				allowNull:false,
 				defaultValue:'',
 			},
 			
-			sell_date:{
-				type:STRING(100),
+			sold_last_id:{
+				type:STRING(300),
 				allowNull:false,
 				defaultValue:'',
+			},
+			brand:{
+				type:INTEGER(4).UNSIGNED,
+				allowNull:false,
+				defaultValue:0,
 			},
 			create_at:{
 				type:STRING(100),
@@ -397,10 +256,12 @@ const modelConfig = {
 			},
 		},
 		extra: {
-			tableName:"nike_product_detail_total",
+			tableName:"sell_product_detail_total",
 			timestamps: false,	
 		}
 	},
+
+
 }
 
 module.exports = modelConfig

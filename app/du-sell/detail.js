@@ -19,7 +19,7 @@ const getProducts = async ()=>{
 		})
 	}
 	let res = await request({
-		url:"/du/nike/getProductList",
+		url:"/du/sell/getProductList",
 		data:conditions
 	})
 
@@ -29,7 +29,7 @@ const getProducts = async ()=>{
 
 const getNeedCaptureProducts = async ()=>{
 
-	// await CaptureCache.delCacheHasMap("nikeDetail",0,"needCaptureProducts")
+	await CaptureCache.delCacheHasMap("nikeDetail",0,"needCaptureProducts")
 
 	let needCaptureProducts = await CaptureCache.getCacheHasMap("nikeDetail",0,"needCaptureProducts")
 
@@ -41,6 +41,7 @@ const getNeedCaptureProducts = async ()=>{
 
     if ( Object.keys(needCaptureProducts).length === 0 ) {
     	let products = await getProducts()
+    	console.log(`[Notice]: 一共需要抓取${products.length}个货号`)
 		let chunkLenth = Math.ceil(products.length / cpuNum)
 		let chunks = common.spliceArray(products,chunkLenth)
 		for ( let [idx,products] of chunks.entries() ) {
@@ -50,7 +51,8 @@ const getNeedCaptureProducts = async ()=>{
 		}
 		await CaptureCache.setCacheHasMap("nikeDetail",0,"needCaptureProducts",JSON.stringify(needCaptureProducts))
     } 
-
+   	console.log(`[Notice]: 一共分为${Object.keys(needCaptureProducts)}个进程同时抓取`)
+   	await common.awaitTime(2000)
     return needCaptureProducts;
 
 }
@@ -87,7 +89,7 @@ const getNeedCaptureProducts = async ()=>{
 				setCaptureProducts:async ()=>products,
 				getCaptureDetail:async (detail,idx)=>{
 					await request({
-						url:"/du/nike/setProductDetail",
+						url:"/du/sell/updateProductDetail",
 						data:{
 							detail:JSON.stringify(detail),
 						}

@@ -10,11 +10,16 @@
     "du-proxy-mac":"anyproxy --intercept --rule /Users/chengyufeng/Framework/duole-manager-windows/proxy/du/rule.js",
 
     "du-self-new": "node app/du-self/new.js",
+    "du-self-skip": "node app/du-self/skip.js",
     "du-self-detail": "node app/du-self/detail.js",
-    "du-self-sold": "node app/du-self/sold.js",
+
     "du-nike-list":"node app/du-nike/list.js",
-    "du-nike-detail":"node app/du-nike/detail.js",
-    "du-nike-sold":"node app/du-nike/sold.js"
+
+    "du-jordan-list":"node app/du-jordan/list.js",
+
+    "du-sold": "node app/du-sell/sold.js",
+    "du-detail":"node app/du-sell/detail.js"
+
   },
   "author": "",
   "license": "ISC",

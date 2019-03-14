@@ -3,10 +3,16 @@ const database = require("../../utils/database.js")
 const model = require("../../utils/model.js")
 const common = require("../../utils/common.js")
 const response = require("../../utils/response.js")
-const DuappResource = database.getDuappResource()
-const NikeProductList = model.getNikeProductList()
-const SelfProductList = model.getSelfProductList()
-const SelfProductDetailTotal = model.getSelfProductDetailTotal()
+
+const DuappResource = database.getMysql("DuappResource");
+const SelfProductList = model.getModel("DuappResource","SelfProductList");
+const SelfProductDetailTotal = model.getModel("DuappResource","SelfProductDetailTotal")
+
+const SellProductList = model.getModel("DuappResource","SellProductList");
+const SellProductDetailTotal = model.getModel("DuappResource","SellProductDetailTotal")
+
+
+
 const routerGet = {}
 const CaptureCache = require("../../libs/du/cache.js")
 
@@ -94,9 +100,9 @@ routerGet.putSelfNewProductUrl = async ctx=>{
 }
 
 
-routerGet.getNikeNewProductIds = async ctx=>{
+routerGet.getSellNewProductIds = async ctx=>{
 	let productIds = []
-	let res = await NikeProductList.findAll({
+	let res = await SellProductList.findAll({
 		raw:true,
 		attributes:["product_id"],
 		where:{
@@ -110,7 +116,7 @@ routerGet.getNikeNewProductIds = async ctx=>{
 	ctx.body = productIds
 }
 
-routerGet.putNikeNewProductUrl = async ctx=>{
+routerGet.putSellNewProductUrl = async ctx=>{
 	let url = ctx.query.url
 	let detailResponse = await common.httpGet(url)
 	let detail = response.parseProductDetail(detailResponse)
@@ -123,15 +129,14 @@ routerGet.putNikeNewProductUrl = async ctx=>{
 		"type":2
 	}
 	await DuappResource.transaction(async t=>{
-		await NikeProductList.update(res,{
+		await SellProductList.update(res,{
 			where:{
-				"product_id":productId
+				"product_id":productId,
 			},
 			transaction:t
 		})
 	})
 }
-
 
 
 

@@ -70,6 +70,7 @@ const handleTypeByDefault = async (requestParams,getCaptureList,captureAfter)=>{
 			await getCaptureList(list)
 			page += 1
 			await common.awaitTime(500)
+			// state = false
 		} else {
 			console.log(`[Notice]: 抓取完毕，没有更多的数据可以抓取`)
 			if ( captureAfter !== null && typeof captureAfter === "function" ) {

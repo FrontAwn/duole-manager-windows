@@ -6,49 +6,49 @@ const request = require("../../utils/request.js")
 const response = require("../../utils/response.js")
 const CaptureList = require("../../libs/du/captureList.js")
 
-const alreadyCaptureProducts = {}
+const currentAlreadyHasProducts = {}
+
+const allCaptureIds = []
 
 const needToConfimIds = []
 const notChangeIds = []
-const diffIds = []
-const allCaptureIds = []
+const newIds = []
 
-var currentCaptureIds = []
 
 const printCaptureProcess = ()=>{
 	console.log(`----------> 当前已经抓取${allCaptureIds.length}个货号`)
-	console.log(`----------> needConfim: ${needToConfimIds.length}`)
-	console.log(`----------> notChange: ${notChangeIds.length}`)
-	console.log(`----------> newChange: ${diffIds.length}`)
-	console.log(`----------> captureIds: ${currentCaptureIds}`)
+	console.log(`----------> 重新上架的货号: ${needToConfimIds.length}`)
+	console.log(`----------> 没有变化的货号: ${notChangeIds.length}`)
+	console.log(`----------> 新货号: ${newIds.length}`)
 }
 
-const getAlreadyCaptureProducts = async ()=>{
+const getCurrentAlreadyHasProducts = async ()=>{
 	let conditions = {
-		attrs:JSON.stringify(["product_id","type"])
+		attrs:JSON.stringify(["product_id","type"]),
 	}
+
 	let res = await request({
-		url:"/du/nike/getProductList",
+		url:"/du/sell/getProductList",
 		data:conditions
 	})
 
-	for ( let [idx,content] of res["data"].entries() ) {
-		alreadyCaptureProducts[content["product_id"]] = content["type"]
+	if (res["data"].length > 0) {
+		for ( let [idx,content] of res["data"].entries() ) {
+			currentAlreadyHasProducts[content["product_id"]] = content["type"]
+		}	
 	}
+	
 }
 
 const getCaptureList = async list=>{
-	currentCaptureIds = []
 	for ( let [idx,content] of list.entries() ) {
 		let product = content["product"]
 		let productId = product["productId"].toString()
 		let title = product["title"]
+		let soldNum = product["soldNum"]
 		allCaptureIds.push(productId)
-		currentCaptureIds.push(productId)
-		if ( alreadyCaptureProducts[productId] ) {
-
-			let type = alreadyCaptureProducts[productId]
-
+		if ( currentAlreadyHasProducts[productId] ) {
+			let type = currentAlreadyHasProducts[productId]
 			switch (type) {
 				case 2:
 					notChangeIds.push(productId)
@@ -57,56 +57,69 @@ const getCaptureList = async list=>{
 					needToConfimIds.push(productId)
 					break;
 			}
-			delete alreadyCaptureProducts[productId]
+			let conditions = {
+				where:JSON.stringify({
+					"product_id":productId,
+				}),
+				content:JSON.stringify({
+					"sold_num":soldNum,
+					"type":2
+				})
+			}
+			await request({
+				url:"/du/sell/updateProductList",
+				data:conditions
+			})
+
+			delete currentAlreadyHasProducts[productId]
 		} else {
-			if ( notChangeIds.includes(productId) || needToConfimIds.includes(productId) ) continue;
+			if ( notChangeIds.includes(productId) || 
+				 needToConfimIds.includes(productId) ||
+				 newIds.includes(productId)
+			) continue;
 			let res = {
 				"product_id":productId,
 				title,
 				"type":0,
+				"sold_num":soldNum,
 				"create_at":moment().format("YYYY-MM-DD")
 			}
 			await request({
-				url:"/du/nike/addProductList",
+				url:"/du/sell/insertProductList",
 				data:{
 					res:JSON.stringify(res)
 				}
 			})
-			diffIds.push(productId)
+			newIds.push(productId)
 		}
 	}
 	printCaptureProcess()
 }
 
 const captureAfter = async ()=>{
-	let needToSkipIds = Object.keys(alreadyCaptureProducts)
-	console.log(`[Notice]: 一共有${needToConfimIds.length}货号重新上架`)
-	console.log(`[Notice]: 一共有${needToSkipIds.length}货号下架`)
-	for ( let [idx,productId] of needToConfimIds.entries() ) {
-		let conditions = {
-			where:JSON.stringify({product_id:productId}),
-			content:JSON.stringify({type:2})
+	let restAlreadyHasProducts = common.deepCopy(currentAlreadyHasProducts)
+	let skipIds = []
+	for ( let [productId,type] of Object.entries(restAlreadyHasProducts) ) {
+		if ( type === 2 ) {
+			let conditions = {
+				where:JSON.stringify({
+					product_id:productId,
+				}),
+				content:JSON.stringify({type:4})
+			}
+			await request({
+				url:"/du/sell/updateProductList",
+				data:conditions
+			})
+			skipIds.push(productId)
 		}
-		await request({
-			url:"/du/nike/updateProductList",
-			data:conditions
-		})
 	}
-	for ( let [idx,productId] of needToSkipIds.entries() ) {
-		let conditions = {
-			where:JSON.stringify({product_id:productId}),
-			content:JSON.stringify({type:4})
-		}
-		await request({
-			url:"/du/nike/updateProductList",
-			data:conditions
-		})
-	}
+	console.log(`[Notice]: 一共有${skipIds.length}货号下架`)
 	process.exit()
 }
 
 ;(async ()=>{
-	await getAlreadyCaptureProducts()
+	await getCurrentAlreadyHasProducts()
 	await CaptureList({
 		captureType:"nike",
 		getCaptureList,	

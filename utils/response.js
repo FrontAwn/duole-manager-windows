@@ -26,13 +26,11 @@ exports.parseProductDetail = response => {
 	})
 
 	detail["sku"] = sku
-	detail["item_id"] = datas["item"]["productItemId"]
 	detail["price"] = price
 	detail["product_id"] = datas['detail']['productId']
 	detail["title"] = datas["detail"]["title"]
 	detail["size_list"] = JSON.stringify(sizeList)
 	detail["sold_total"] = datas["detail"]["soldNum"]
-	detail["sell_date"] = datas["detail"]["sellDate"]
 	detail["create_at"] = moment().format("YYYY-MM-DD")
 	return detail;
 }
@@ -45,17 +43,17 @@ exports.parseProductList = response => {
 exports.parseProductSold = response => {
 	response = JSON.parse(response)
 	let soldList = response["data"]["list"]
+	let lastId = response["data"]["lastId"]
 	let list = []
 	if ( soldList.length !== 0 ) {
 		soldList.forEach(content=>{
 			list.push({
-				user:content["userName"],
-				size:content["sizeDesc"],
-				time:content["formatTime"]
+				size:content["item"]["size"],
+				date:content["formatTime"]
 			})
 		})
 	}
-	return list
+	return {lastId,list}
 }
 
 
