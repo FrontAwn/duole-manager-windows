@@ -52,7 +52,7 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
     let stopDate = product["stopDate"] || 1
 
     if ( typeof stopDate === "number" ) {
-        stopDate = moment(startDate).subtract((stopDate),'day').format("YYYY-MM-DD")
+        stopDate = moment(startDate).subtract(stopDate,'day').format("YYYY-MM-DD")
     }
 
     let stopDateNum = parseInt( moment(stopDate).format("YYYYMMDD") )

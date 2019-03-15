@@ -8,7 +8,7 @@ module.exports = {
 		// "current"
 		// "history"
 		// "custom"
-		mode:"history",
+		mode:"current",
 
 
 		getProductListRequestConfig:{
@@ -30,8 +30,4 @@ module.exports = {
 	}
 }
 
-// 2019-02-25
 
-// update sell_product_detail_total set sold_detail = "", sold_num = "", sold_last_id = "" where id > 0;
-
-// delete from sell_product_detail_total where title = "";

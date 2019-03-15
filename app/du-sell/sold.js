@@ -130,7 +130,8 @@ const getNeedCaptureProductDetail = async product=>{
 			where["create_at"] = {
 				"$ne":moment().format("YYYY-MM-DD")
 			}
-			where["sold_last_id"] = ""
+			// where["sold_last_id"] = ""
+			where["sold_detail"] = ""
 			details["startDate"] = moment().format("YYYY-MM-DD")
 			break;
 		case "history":
@@ -184,7 +185,6 @@ const getNeedCaptureProductDetail = async product=>{
 		// await CaptureCache.cleanCacheLinked(type,0,"cacheCaptureProducts")
 	
 		await setNeedCaptureProducts()
-		// cpuNum
 		for (let idx=1; idx <= cpuNum; idx++) {
 			await common.awaitTime(500)
 			let worker = cluster.fork()
