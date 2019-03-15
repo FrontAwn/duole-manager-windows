@@ -159,11 +159,6 @@ const modelConfig = {
 				allowNull:false,
 				defaultValue:0,
 			},
-			brand:{
-				type:INTEGER(4).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
-			},	
 			sold_num:{
 				type:STRING(100),
 				allowNull:false,
@@ -243,11 +238,6 @@ const modelConfig = {
 				type:STRING(300),
 				allowNull:false,
 				defaultValue:'',
-			},
-			brand:{
-				type:INTEGER(4).UNSIGNED,
-				allowNull:false,
-				defaultValue:0,
 			},
 			create_at:{
 				type:STRING(100),
