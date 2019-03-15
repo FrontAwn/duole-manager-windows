@@ -254,6 +254,11 @@ const modelConfig = {
 				allowNull:false,
 				defaultValue:'',
 			},
+			date_num:{
+				type:INTEGER(11).UNSIGNED,
+				allowNull:false,
+				defaultValue:0,
+			},
 		},
 		extra: {
 			tableName:"sell_product_detail_total",

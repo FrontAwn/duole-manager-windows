@@ -12,10 +12,13 @@ const DuappResourceRemote = database.getMysql("DuappResource","remote")
 const SelfProductDetailTotalLocal = model.getModel("DuappResource","SelfProductDetailTotal","local")
 const SelfProductDetailTotalRemote = model.getModel("DuappResource","SelfProductDetailTotal","remote")
 
-const NikeProductDetailTotalRemote = model.getModel("DuappResource","NikeProductDetailTotal","remote")
+// const NikeProductDetailTotalRemote = model.getModel("DuappResource","NikeProductDetailTotal","remote")
+
+
+const SellProductDetailTotalLocal = model.getModel("DuappResource","SellProductDetailTotal","local")
+const SellProductDetailTotalRemote = model.getModel("DuappResource","SellProductDetailTotal","remote")
 
 const ruleSoldJson = path.resolve(__dirname,"./json/ruleSold.json")
-
 
 const CaptureCache = require("./libs/du/cache.js")
 
@@ -57,6 +60,36 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 
 
 ;(async ()=>{
+
+	// let details = await SellProductDetailTotalRemote.findAll({
+	// 	attributes:["id","sku","create_at"],
+	// 	where:{
+	// 		"date_num":0,
+	// 	},
+	// 	raw:true
+	// })
+
+	// let num = 0
+
+	// for ( let [idx,detail] of details.entries() ) {
+
+	// 	let update = {
+	// 		"date_num":parseInt(moment(detail["create_at"]).format("YYYYMMDD"))
+	// 	}
+	// 	await DuappResourceLocal.transaction(async t=>{
+	// 		await SellProductDetailTotalRemote.update(update,{
+	// 			where:{
+	// 				id:detail["id"],
+	// 				sku:detail["sku"],
+	// 				create_at:detail["create_at"],
+	// 			}
+	// 		})
+	// 	})
+	// 	num += 1
+	// 	console.log(`${num}/${details.length}`)
+	// }
+
+	
 
 })()
 
