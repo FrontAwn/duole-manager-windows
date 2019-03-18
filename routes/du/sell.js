@@ -1,4 +1,5 @@
 const path = require("path")
+const moment = require("moment")
 const database = require("../../utils/database.js")
 const model = require("../../utils/model.js")
 const common = require("../../utils/common.js")
@@ -185,6 +186,7 @@ routerGet.updateProductSoldDetail = async ctx=>{
 		"sold_num":soldNum,
 		"sold_last_id":lastId,
 		"create_at":createAt,
+		"date_num":parseInt(moment(createAt).format("YYYYMMDD"))
 	}
 
 
