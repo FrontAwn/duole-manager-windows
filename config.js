@@ -9,7 +9,7 @@ module.exports = {
 		// "current"
 		// "history"
 		// "custom"
-		mode:"current",
+		mode:"custom",
 
 
 		getProductListRequestConfig:{
@@ -25,9 +25,8 @@ module.exports = {
 		setProductSoldRequestConfig:{
 			url:"/du/sell/updateProductSoldDetail"
 		},
-		startDare:0,
-		stopDate:1,
-
+		startDate:"2019-03-18",
+		stopDate:7,
 	}
 }
 

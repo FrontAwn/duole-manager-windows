@@ -73,6 +73,8 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
 
         if ( format !== currentDate ) {
             if ( lastId === null ) lastId = ""
+            console.log(currentDate)
+            console.log(soldMap)
             await request({
                 url:setProductSoldRequestConfig["url"],
                 data:{
@@ -91,10 +93,10 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
             soldMap = {}
         }
 
-        if ( !soldMap[size] ) {
-            soldMap[size] = 1
+        if ( !soldMap[size+''] ) {
+            soldMap[size+''] = 1
         } else {
-            soldMap[size] += 1
+            soldMap[size+''] += 1
         } 
 
     }
