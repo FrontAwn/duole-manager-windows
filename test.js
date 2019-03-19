@@ -5,22 +5,14 @@ const response = require("./utils/response")
 const common = require("./utils/common")
 const database = require("./utils/database")
 const model = require("./utils/model")
+const ejsexcel = require("ejsexcel")
+const cheerio = require("cheerio")
 
 const DuappResourceLocal = database.getMysql("DuappResource","local")
 const DuappResourceRemote = database.getMysql("DuappResource","remote")
 
-const SelfProductDetailTotalLocal = model.getModel("DuappResource","SelfProductDetailTotal","local")
-const SelfProductDetailTotalRemote = model.getModel("DuappResource","SelfProductDetailTotal","remote")
-
-// const NikeProductDetailTotalRemote = model.getModel("DuappResource","NikeProductDetailTotal","remote")
-
-
 const SellProductDetailTotalLocal = model.getModel("DuappResource","SellProductDetailTotal","local")
 const SellProductDetailTotalRemote = model.getModel("DuappResource","SellProductDetailTotal","remote")
-
-const ruleSoldJson = path.resolve(__dirname,"./json/ruleSold.json")
-
-const CaptureCache = require("./libs/du/cache.js")
 
 // 把本地du数据同步到线上
 const asnycSelfProductDetailsToRemote = async ()=>{
@@ -54,6 +46,79 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 	process.exit()
 }
 
+// 导出当天详情数据
+const exportDatas = async ()=>{
+	let currentDateString = moment().format("YYYY-MM-DD")
+	let beforeDateString = moment(currentDateString).subtract(1,'day').format("YYYY-MM-DD")
+
+
+ 	let currentDateNum = parseInt(moment(currentDateString).format("YYYYMMDD"))
+ 	let beforeDateNum = parseInt(moment(beforeDateString).format("YYYYMMDD"))
+	
+	let productDetails = await SellProductDetailTotalRemote.findAll({
+		attributes:["sku","title","price","size_list","sold_total"],
+		where:{
+			date_num:currentDateNum
+		},
+		raw:true
+	})
+
+	let productSolds = await SellProductDetailTotalRemote.findAll({
+		attributes:["sku","sold_detail","sold_num"],
+		where:{
+			date_num:beforeDateNum
+		},
+		raw:true
+	})
+
+	productSolds = common.indexBy(productSolds,"sku")
+
+	let res = []
+
+	for ( let [idx,detail] of productDetails.entries() ) {
+		let { sku, title, price } = detail
+		let sizeList = JSON.parse(detail["size_list"])
+		let soldTotal = parseInt(detail["sold_total"])
+		let soldDetail = null
+		let soldNum = null
+		if ( productSolds[sku] ) {
+			soldDetail = JSON.parse(productSolds[sku]["sold_detail"])
+			soldNum = productSolds[sku]["sold_num"]
+		}
+		for (let [size,num] of Object.entries(sizeList) ) {
+			let content = {
+				sku,
+				title,
+				soldTotal,
+				size,
+				price:num,
+			}
+			if ( soldDetail !== null && soldDetail[size] ) {
+				content["soldDetail"] = soldDetail[size]
+			} else {
+				content["soldDetail"] = "--"
+			}
+
+			if ( soldNum !== null ) {
+				content["soldNum"] = parseInt(soldNum)
+			} else {
+				content["soldNum"] = "--"
+			}
+
+			res.push(content)
+		}
+	}
+
+	let templateBuffer = await common.readFile(path.resolve(__dirname,"./template/毒app抓取数据_template.xlsx"))
+    const excelBuffer = await ejsexcel.renderExcel(templateBuffer, res);
+
+    await common.writeFile(path.resolve(
+    	__dirname,
+    	`../毒app${currentDateNum}.xlsx`
+    ),excelBuffer)
+    console.log("Succsess")
+}
+
 
 
 
@@ -61,35 +126,6 @@ const asnycSelfProductDetailsToRemote = async ()=>{
 
 ;(async ()=>{
 
-	// let details = await SellProductDetailTotalRemote.findAll({
-	// 	attributes:["id","sku","create_at"],
-	// 	where:{
-	// 		"date_num":0,
-	// 	},
-	// 	raw:true
-	// })
-
-	// let num = 0
-
-	// for ( let [idx,detail] of details.entries() ) {
-
-	// 	let update = {
-	// 		"date_num":parseInt(moment(detail["create_at"]).format("YYYYMMDD"))
-	// 	}
-	// 	await DuappResourceLocal.transaction(async t=>{
-	// 		await SellProductDetailTotalRemote.update(update,{
-	// 			where:{
-	// 				id:detail["id"],
-	// 				sku:detail["sku"],
-	// 				create_at:detail["create_at"],
-	// 			}
-	// 		})
-	// 	})
-	// 	num += 1
-	// 	console.log(`${num}/${details.length}`)
-	// }
-
-	
 
 })()
 

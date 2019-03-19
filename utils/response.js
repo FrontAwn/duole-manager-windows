@@ -31,6 +31,8 @@ exports.parseProductDetail = response => {
 	detail["title"] = datas["detail"]["title"]
 	detail["size_list"] = JSON.stringify(sizeList)
 	detail["sold_total"] = datas["detail"]["soldNum"]
+	detail["sold_detail"] = JSON.stringify({})
+	detail["sold_num"] = 0
 	detail["create_at"] = moment().format("YYYY-MM-DD")
 	detail["date_num"] = parseInt(moment().format("YYYYMMDD"))
 	return detail;
