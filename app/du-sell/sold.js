@@ -205,7 +205,6 @@ const getNeedCaptureProductDetail = async product=>{
 					console.log(`[Notice]: 当前已经抓取完成${sum}个货号`)
 					await common.awaitTime(300)
 					await nextCapture()
-					process.exit()
 				}
 			})
 		}
