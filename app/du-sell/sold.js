@@ -34,38 +34,33 @@ const setNeedCaptureProducts = async ()=>{
 	console.log(`[Notice]: 当前还有${length}个货号需要抓取`)
 
 	if ( length === 0 ) {
-
 		let products = await getProductList()
 		for ( let [idx,product] of products.entries() ) {
 			await CaptureCache.pushCacheLinked(type,0,"needCaptureProducts",JSON.stringify(product))
 			console.log(`正在填充数据: ${idx+1}/${products.length}`)
 		}
 		console.log(`数据填充完毕: 一共${products.length}条需要抓取`)
-	
 	} 
 
 }
 
 // 从当前队列中获得一个要抓取的product信息
 const getNeedCaptureProduct = async ()=>{
-	let product = null
-	// 查看意外退出的缓存队里中有没有要抓取的product
-	let cacheCaptureProduct = await CaptureCache.popCacheLinked(type,0,"cacheCaptureProducts")
-	if ( cacheCaptureProduct !== null && cacheCaptureProduct !== "null" ) {
-		// 如果意外退出的缓存队列里存在product，优先抓取缓存
-		product = JSON.parse(cacheCaptureProduct)
+	// // 查看意外退出的缓存队里中有没有要抓取的product
+	// let cacheCaptureProduct = await CaptureCache.popCacheLinked(type,0,"cacheCaptureProducts")
+	// if ( cacheCaptureProduct !== null && cacheCaptureProduct !== "null" ) {
+	// 	// 如果意外退出的缓存队列里存在product，优先抓取缓存
+	// 	product = JSON.parse(cacheCaptureProduct)
+	// } else {
+	// 	// 如果意外退出的缓存队列没有任何product，则取出新的product
+	// }
+	let product = await CaptureCache.popCacheLinked(type,0,"needCaptureProducts")
+	if ( product !== null ) {
+		product = JSON.parse(product)
 	} else {
-		// 如果意外退出的缓存队列没有任何product，则取出新的product
-		product = await CaptureCache.popCacheLinked(type,0,"needCaptureProducts")
-		if ( product !== null ) {
-			product = JSON.parse(product)
-		} else {
-			// 如果货号队列中没有数据，表示已经抓完所有货号，退出进程
-			console.log(`[Notice] 已经没有货号可以抓取`)
-			process.exit()
-		}
+		console.log(`[Notice] 已经没有货号可以抓取`)
+		process.exit()
 	}
-
 	return product
 }
 
@@ -119,9 +114,14 @@ const getNeedCaptureProductDetail = async product=>{
 
 	var product = null
 
-	// await CaptureCache.cleanCacheLinked(type,0,"needCaptureProducts")
-	// await CaptureCache.cleanCacheLinked(type,0,"cacheCaptureProducts")
+	var clean = false
 
+	// 清理缓存和队列
+	if ( clean ) {
+		await CaptureCache.cleanCacheLinked(type,0,"needCaptureProducts")
+		await CaptureCache.cleanCacheLinked(type,0,"cacheCaptureProducts")
+	}
+	
 	await setNeedCaptureProducts()
 
 	async function nextCapture() {
@@ -168,12 +168,12 @@ const getNeedCaptureProductDetail = async product=>{
 
 		await nextCapture()
 
-		process.on("SIGINT",async ()=>{
-			if ( product !== null ) {
-				await CaptureCache.pushCacheLinked(type,0,"cacheCaptureProducts",JSON.stringify(product))	
-			}
-			process.exit()
-		})
+		// process.on("SIGINT",async ()=>{
+		// 	if ( product !== null ) {
+		// 		await CaptureCache.pushCacheLinked(type,0,"cacheCaptureProducts",JSON.stringify(product))	
+		// 	}
+		// 	process.exit()
+		// })
 })()
 
 
