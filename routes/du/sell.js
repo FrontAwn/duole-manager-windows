@@ -131,10 +131,6 @@ routerGet.updateProductDetail = async ctx=>{
 }
 
 
-var currentSku = null
-var currentDate = null
-var currentProduct = null
-
 routerGet.updateProductSoldDetail = async ctx=>{
 	let query = ctx.query
 	let sold = JSON.parse(query["sold"])
@@ -146,9 +142,6 @@ routerGet.updateProductSoldDetail = async ctx=>{
 	let productId = product["product_id"]
 	let sku = product["sku"]
 
-	if ( currentSku === null ) currentSku = sku
-	if ( currentDate === null ) currentDate = createAt
-
 	console.log()
 	console.log("---------------")
 	console.log("货号:",sku)
@@ -158,26 +151,19 @@ routerGet.updateProductSoldDetail = async ctx=>{
 	console.log("---------------")
 	console.log()
 
-	if ( currentSku != sku ||
-		 currentDate != createAt ||
-		 currentProduct === null
-	) {
-		currentProduct = await SellProductDetailTotal.findOne({
-			raw:true,
-			where:{
-				sku,
-				"create_at":createAt,
-			}
-		})
-		currentDate = createAt
-		currentSku = sku
-	}
 
+	let currentProduct = await SellProductDetailTotal.findOne({
+		raw:true,
+		attributes:["id"],
+		where:{
+			sku,
+			"create_at":createAt,
+		}
+	})
 
 	for ( let [size,num] of Object.entries(sold) ) {
 		soldNum += num
 	}
-
 
 	let saveData = {
 		"sku":sku,
@@ -189,10 +175,15 @@ routerGet.updateProductSoldDetail = async ctx=>{
 		"date_num":parseInt(moment(createAt).format("YYYYMMDD"))
 	}
 
-
 	await DuappResource.transaction(async t=>{
 		if ( currentProduct === null ) {
 			await SellProductDetailTotal.create(saveData,{transaction:t})
+			console.log()
+			console.log("-----------")
+			console.log("创建新数据")
+			console.log("-----------")
+			console.log()
+
 		} else {
 			await SellProductDetailTotal.update(saveData,{
 				where:{
@@ -201,6 +192,11 @@ routerGet.updateProductSoldDetail = async ctx=>{
 				},
 				transaction:t
 			})
+			console.log()
+			console.log("-----------")
+			console.log("更新已有数据")
+			console.log("-----------")
+			console.log()
 		}
 	})
 

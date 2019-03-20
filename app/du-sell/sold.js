@@ -2,45 +2,31 @@ const path = require("path")
 const moment = require("moment")
 const request = require("../../utils/request.js")
 const common = require("../../utils/common.js")
-const readline = require('readline');
 const cluster = require('cluster');
 const config = require("../../config.js")
 var cpuNum = require('os').cpus().length;
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
 
 const CaptureSold = require("../../libs/du/captureSold.js")
 const CaptureCache = require("../../libs/du/cache.js")
 const CaptureUtils = require("../../libs/du/utils.js")
 
+
+
 const type = config["soldEnv"]["type"] || "sellSold"
-
-const mode = config["soldEnv"]["mode"] || "current"
-
-const conditions = config["soldEnv"]["conditions"] || {
-	attrs:JSON.stringify(["product_id","sku","sold_num"]),
-	where:JSON.stringify({
-		type:2
-	}),
-}
-
+var startDate = config["soldEnv"]["startDate"] || moment().subtract(1,'day').format("YYYY-MM-DD")
+var stopDate = config["soldEnv"]["stopDate"] || moment().subtract(1,'day').format("YYYY-MM-DD")
 const getProductListRequestConfig = config["soldEnv"]["getProductListRequestConfig"]
 
-const getProducts = async ()=>{
 
+
+const getProductList = async ()=>{
 	let res = await request(getProductListRequestConfig)
-
 	let datas = res["data"]
-
 	return datas
 }
 
-const cleanProducts = async ()=>{
-	await CaptureCache.cleanCacheLinked(type,0,"needCaptureProducts")
-}
+
 
 const setNeedCaptureProducts = async ()=>{
 	let length = await CaptureCache.getCacheLinkedLength(type,0,"needCaptureProducts")
@@ -49,7 +35,7 @@ const setNeedCaptureProducts = async ()=>{
 
 	if ( length === 0 ) {
 
-		let products = await getProducts()
+		let products = await getProductList()
 		for ( let [idx,product] of products.entries() ) {
 			await CaptureCache.pushCacheLinked(type,0,"needCaptureProducts",JSON.stringify(product))
 			console.log(`正在填充数据: ${idx+1}/${products.length}`)
@@ -65,7 +51,7 @@ const getNeedCaptureProduct = async ()=>{
 	let product = null
 	// 查看意外退出的缓存队里中有没有要抓取的product
 	let cacheCaptureProduct = await CaptureCache.popCacheLinked(type,0,"cacheCaptureProducts")
-	if ( cacheCaptureProduct !== null ) {
+	if ( cacheCaptureProduct !== null && cacheCaptureProduct !== "null" ) {
 		// 如果意外退出的缓存队列里存在product，优先抓取缓存
 		product = JSON.parse(cacheCaptureProduct)
 	} else {
@@ -83,80 +69,44 @@ const getNeedCaptureProduct = async ()=>{
 	return product
 }
 
-// 获得抓取的开始时间和结束时间
+// 获得抓取的开始时间,结束时间,LastId
 const getNeedCaptureProductDetail = async product=>{
 	let { sku } = product
+	let lastId = null
+
+	let currentDate = moment().format("YYYY-MM-DD")
+	if ( typeof startDate === "number" ) {
+		startDate = moment(currentDate).subtract(startDate,'day').format("YYYY-MM-DD")
+	}
+	if ( typeof stopDate === "number" ) {
+		stopDate = moment(startDate).subtract(stopDate-1,'day').format("YYYY-MM-DD")
+	}
+
+	let createAt = moment(startDate).add(1,"day").format("YYYY-MM-DD")
 
 	let conditions = {
-		attrs:JSON.stringify(["create_at","sold_last_id"]),
-		order:JSON.stringify([ ["create_at","ASC"] ]),
+		attrs:JSON.stringify(["sold_last_id"]),
+		where:JSON.stringify({
+			sku,
+			"create_at":createAt
+		}),
 		length:1,
 	}
 
-	let where = {
-		sku
-	}
-
-	let details = {}
-
-	switch (mode) {
-		case "current":
-			where["create_at"] = {
-				"$ne":moment().format("YYYY-MM-DD")
-			}
-			where["sold_detail"] = ""
-			details["startDate"] = moment().format("YYYY-MM-DD")
-			break;
-		case "history":
-			where["sold_detail"] = {
-				"$ne":""
-			}
-			details["stopDate"] = config["soldEnv"]["stopDate"]
-			break;
-		case "custom":
-			if (!config["soldEnv"]["startDate"] || !config["soldEnv"]["stopDate"]) {
-				console.log(`[Notice] custom模式下必须设置startDate和stopDate`);
-				process.exit()
-			}
-
-			let startDate = config["soldEnv"]["startDate"]
-			let stopDate = config["soldEnv"]["stopDate"]
-			let createAt = moment(startDate).add(1,'day').format("YYYY-MM-DD")
-			where["create_at"] = createAt
-			details["startDate"] = startDate
-			details["stopDate"] = stopDate
-			break;
-	}
-
-	conditions["where"] = JSON.stringify(where)
-
-	let res = await request({
+	let productDetailResponse = await request({
 		url:"/du/sell/getProductDetail",
 		data:conditions
-	})	
+	})
 
-	if ( res["data"] === null || res["data"].length === 0 ){
+	if ( productDetailResponse["data"].length === 0 ) {
 		return null
 	}
 
-	let resData = res["data"][0]
-
-	if ( resData["sold_last_id"] === "" ) {
-		details["lastId"] = null 
-	} else {
-		details["lastId"] = resData["sold_last_id"]
+	if ( productDetailResponse["data"][0]["sold_last_id"] !== '') {
+		lastId = productDetailResponse["data"][0]["sold_last_id"]
 	}
 
-
-	if ( config["soldEnv"]["mode"] !== "custom" ) {
-		if ( details["startDate"] ) {
-			details["stopDate"] = resData["create_at"]
-		} else {
-			details["startDate"] = resData["create_at"]
-		}
-	}
-
-	let buildedProduct = {...product,...details}
+	let buildedProduct = {...product,...{lastId,startDate,stopDate}}
 
 	return buildedProduct;
 }
@@ -169,14 +119,15 @@ const getNeedCaptureProductDetail = async product=>{
 
 	var product = null
 
-	// await cleanProducts()
+	// await CaptureCache.cleanCacheLinked(type,0,"needCaptureProducts")
 	// await CaptureCache.cleanCacheLinked(type,0,"cacheCaptureProducts")
+
 	await setNeedCaptureProducts()
+
 	async function nextCapture() {
 			
 			product = await getNeedCaptureProduct()
 			// product = { product_id: '9675',sku: '818736-011'}
-
 			product = await getNeedCaptureProductDetail(product)
 
 			console.log(product)
@@ -189,6 +140,7 @@ const getNeedCaptureProductDetail = async product=>{
 			await CaptureSold({
 				product,
 				getProductSold:async (sold,lastId)=>{
+					// console.log(sold)
 					let state = await CaptureUtils.parseSoldHistory(
 							product,
 							sold,
@@ -199,11 +151,16 @@ const getNeedCaptureProductDetail = async product=>{
 
 				captureAfter:async ()=>{
 					sum += 1
-					console.log(`[Notice]: ${product["sku"]}抓取完成!!!`)
 					let needCaptureProductsLength = await CaptureCache.getCacheLinkedLength(type,0,"needCaptureProducts")
-					console.log(`[Notice]: 当前还要抓取${needCaptureProductsLength}个货号`)
-					console.log(`[Notice]: 当前已经抓取完成${sum}个货号`)
-					await common.awaitTime(300)
+
+					console.log()
+					console.log("-----------")
+					console.log(`${product["sku"]}抓取完成`)
+					console.log(`当前还要抓取${needCaptureProductsLength}个货号`)
+					console.log(`当前已经抓取完成${sum}个货号`)
+					console.log("-----------")
+					console.log()
+
 					await nextCapture()
 				}
 			})

@@ -6,11 +6,9 @@ module.exports = {
 	soldEnv:{
 		type:"sellSold",
 
-		// "current"
-		// "history"
-		// "custom"
-		mode:"custom",
+		startDate:"2019-03-19",
 
+		stopDate:"2019-03-19",
 
 		getProductListRequestConfig:{
 			url:"/du/sell/getProductList",
@@ -25,8 +23,7 @@ module.exports = {
 		setProductSoldRequestConfig:{
 			url:"/du/sell/updateProductSoldDetail"
 		},
-		startDate:"2019-03-18",
-		stopDate:7,
+		
 	}
 }
 

@@ -49,11 +49,9 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
 
     let startDate = product["startDate"]
 
-    let stopDate = product["stopDate"] || 1
+    let stopDate = product["stopDate"] 
 
-    if ( typeof stopDate === "number" ) {
-        stopDate = moment(startDate).subtract(stopDate,'day').format("YYYY-MM-DD")
-    }
+    let startDateNum = parseInt( moment(startDate).format("YYYYMMDD") )
 
     let stopDateNum = parseInt( moment(stopDate).format("YYYYMMDD") )
 
@@ -68,13 +66,13 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
         if (currentDate === null) {
             currentDate = format
         }         
-
+        
         let size = content["size"]
 
         if ( format !== currentDate ) {
             if ( lastId === null ) lastId = ""
-            console.log(currentDate)
-            console.log(soldMap)
+            console.log("时间",currentDate)
+            console.log("详情",soldMap)
             await request({
                 url:setProductSoldRequestConfig["url"],
                 data:{

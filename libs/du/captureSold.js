@@ -56,9 +56,7 @@ module.exports = async (options)=>{
 
 	while (state) {
 		let url = await getRequestUrl(productId,lastId)
-		// console.log(`----->[Request Url] : ${url}`)
-		await common.awaitTime(500)
-
+		// await common.awaitTime(500)
 		let res = await common.httpGet(url)
 
 		let soldDetail = response.parseProductSold(res)
