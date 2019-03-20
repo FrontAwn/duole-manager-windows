@@ -55,8 +55,9 @@ module.exports = async (options)=>{
 	let lastId = product["lastId"]
 
 	while (state) {
+
 		let url = await getRequestUrl(productId,lastId)
-		// await common.awaitTime(500)
+		
 		let res = await common.httpGet(url)
 
 		let soldDetail = response.parseProductSold(res)
@@ -65,6 +66,8 @@ module.exports = async (options)=>{
 
 		lastId = soldDetail["lastId"]
 
+		await common.awaitTime(300)
+		
 	}
 
 	if ( captureAfter !== null && typeof captureAfter === "function" ) {

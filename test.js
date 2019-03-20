@@ -126,6 +126,7 @@ const exportDatas = async ()=>{
 
 ;(async ()=>{
 
+	await exportDatas()
 
 })()
 

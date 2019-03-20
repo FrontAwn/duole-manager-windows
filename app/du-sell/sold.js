@@ -14,6 +14,7 @@ const CaptureUtils = require("../../libs/du/utils.js")
 
 
 const type = config["soldEnv"]["type"] || "sellSold"
+var targetProduct = config["soldEnv"]["targetProduct"]
 var startDate = config["soldEnv"]["startDate"] || moment().subtract(1,'day').format("YYYY-MM-DD")
 var stopDate = config["soldEnv"]["stopDate"] || moment().subtract(1,'day').format("YYYY-MM-DD")
 const getProductListRequestConfig = config["soldEnv"]["getProductListRequestConfig"]
@@ -120,20 +121,28 @@ const getNeedCaptureProductDetail = async product=>{
 	if ( clean ) {
 		await CaptureCache.cleanCacheLinked(type,0,"needCaptureProducts")
 		await CaptureCache.cleanCacheLinked(type,0,"cacheCaptureProducts")
+		console.log("已经清除队列")
 	}
 	
-	await setNeedCaptureProducts()
+
+	if ( !targetProduct ) {
+		await setNeedCaptureProducts()
+	}
 
 	async function nextCapture() {
 			
-			product = await getNeedCaptureProduct()
-			// product = { product_id: '9675',sku: '818736-011'}
+			if ( !targetProduct ) {
+				product = await getNeedCaptureProduct()	
+			} else {
+				product = targetProduct
+			}
+			
 			product = await getNeedCaptureProductDetail(product)
 
 			console.log(product)
 
 			if ( product === null ) {
-				console.log(`[Notice]: 当前货号没有最新销量纪录，请隔天再抓`)
+				console.log(`[Notice]: 货号不存在详细信息或者没有要抓的销量详情`)
 				await nextCapture()
 			}
 
@@ -142,10 +151,10 @@ const getNeedCaptureProductDetail = async product=>{
 				getProductSold:async (sold,lastId)=>{
 					// console.log(sold)
 					let state = await CaptureUtils.parseSoldHistory(
-							product,
-							sold,
-							lastId,
-						)
+						product,
+						sold,
+						lastId,
+					)
 					return state
 				},
 
@@ -161,108 +170,19 @@ const getNeedCaptureProductDetail = async product=>{
 					console.log("-----------")
 					console.log()
 
-					await nextCapture()
+					if ( !targetProduct ) {
+						await nextCapture()	
+					} else {
+						process.exit()
+					}
+					
 				}
 			})
 		}
 
 		await nextCapture()
-
-		// process.on("SIGINT",async ()=>{
-		// 	if ( product !== null ) {
-		// 		await CaptureCache.pushCacheLinked(type,0,"cacheCaptureProducts",JSON.stringify(product))	
-		// 	}
-		// 	process.exit()
-		// })
 })()
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-// ;(async ()=>{
-// 	if ( cluster.isMaster ) {
-
-// 		// 主进程
-		
-		// await cleanProducts()
-		// await CaptureCache.cleanCacheLinked(type,0,"cacheCaptureProducts")
-// 		for (let idx=1; idx <= cpuNum; idx++) {
-// 			await common.awaitTime(500)
-// 			let worker = cluster.fork()
-// 			worker.on("message",onWorkerMessage)
-// 		}
-
-// 		process.on("SIGINT",onMasterSigint)
-
-
-// 	} else {
-
-// 		// 子进程
-
-// 		async function nextCapture() {
-			
-// 			let product = await getNeedCaptureProduct()
-// 			let product = { product_id: '9675',sku: '818736-011'}
-
-// 			product = await getNeedCaptureProductDetail(product)
-
-// 			console.log(product)
-
-// 			if ( product === null ) {
-// 				console.log(`[Notice]: 当前货号没有最新销量纪录，请隔天再抓`)
-// 				await nextCapture()
-// 			}
-
-// 			process.send({
-// 				event:"add",
-// 				content:{
-// 					product	
-// 				}
-// 			})
-
-			
-
-// 			await CaptureSold({
-// 				product,
-// 				getProductSold:async (sold,lastId)=>{
-// 					// console.log(sold)
-// 					let state = await CaptureUtils.parseSoldHistory(
-// 							product,
-// 							sold,
-// 							lastId,
-// 						)
-// 					return state
-// 				},
-
-// 				captureAfter:async ()=>{
-// 					process.send({
-// 						event:"del",
-// 						content:{
-// 							product
-// 						}
-// 					})
-// 					console.log(`[Notice]: ${product["sku"]}抓取完成!!!`)
-// 					let needCaptureProductsLength = await CaptureCache.getCacheLinkedLength(type,0,"needCaptureProducts")
-// 					console.log(`[Notice]: 当前还要抓取${needCaptureProductsLength}个货号`)
-// 					// await nextCapture()
-// 				}
-// 			})
-// 		}
-
-// 		await nextCapture()
-
-// 	}
-	
-
-// })()

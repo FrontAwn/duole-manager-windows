@@ -44,7 +44,6 @@ var currentDate = null
 const setProductSoldRequestConfig = config["soldEnv"]["setProductSoldRequestConfig"]
 
 exports.parseSoldHistory = async(product,sold,lastId)=>{
-    
     if ( sold.length === 0 ) return false;
 
     let startDate = product["startDate"]
@@ -66,7 +65,6 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
         if (currentDate === null) {
             currentDate = format
         }         
-        
         let size = content["size"]
 
         if ( format !== currentDate ) {

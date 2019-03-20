@@ -6,6 +6,9 @@ module.exports = {
 	soldEnv:{
 		type:"sellSold",
 
+		// targetProduct:{product_id:"11746",sku:"F36640"},
+		targetProduct:false,
+
 		startDate:"2019-03-19",
 
 		stopDate:"2019-03-19",
@@ -16,7 +19,7 @@ module.exports = {
 				attrs:JSON.stringify(["product_id","sku"]),
 				where:JSON.stringify({
 					type:2,
-				}),	
+				})
 			}
 		},
 
