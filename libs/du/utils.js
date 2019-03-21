@@ -5,43 +5,51 @@ const robot = require("../../utils/robot.js")
 const common = require("../../utils/common.js")
 const request = require("../../utils/request.js")
 const response = require("../../utils/response.js")
-const database = require("../../utils/database.js")
 const config = require("../../config.js")
-const cache = require("./cache.js")
+const getSign = require("../../utils/sign.js")
 
 
-
-exports.readyStartRobot = async ()=>{
-	await robot.clickWindowWhite()
+exports.getProductDetail = async productId => {
+    let params = {productId,source:"shareDetail"}
+    let sign = getSign(params)
+    let url = `http://m.poizon.com/mapi/product/detail?productId=${productId}&source=shareDetail&sign=${sign}`
+    let detailResponse = await common.httpGet(url)
+    let detail = response.parseProductDetail(detailResponse)
+    return { detail, url };
 }
 
-exports.searchSkuRobot = async (product,type)=>{
-	let sku = product["sku"]
-	let productId = product["product_id"]
-	await robot.clickSearchInput()
-	await common.awaitTime(500)
-	await robot.inputContent(sku)
-	await common.awaitTime(500)
-	await robot.clickEnter()
-}
 
-exports.cleanSkuRobot = async ()=>{
-	await robot.clickSearchInput()
-	await common.awaitTime(300)
-	await robot.clickCleanButton()
-}
+// exports.readyStartRobot = async ()=>{
+// 	await robot.clickWindowWhite()
+// }
+
+// exports.searchSkuRobot = async (product,type)=>{
+// 	let sku = product["sku"]
+// 	let productId = product["product_id"]
+// 	await robot.clickSearchInput()
+// 	await common.awaitTime(500)
+// 	await robot.inputContent(sku)
+// 	await common.awaitTime(500)
+// 	await robot.clickEnter()
+// }
+
+// exports.cleanSkuRobot = async ()=>{
+// 	await robot.clickSearchInput()
+// 	await common.awaitTime(300)
+// 	await robot.clickCleanButton()
+// }
  
 
-exports.rollSoldRobot = async ()=>{
-	await robot.rollWindow()
-	await common.awaitTime(300)
-	await robot.rollWindow()
-}
+// exports.rollSoldRobot = async ()=>{
+// 	await robot.rollWindow()
+// 	await common.awaitTime(300)
+// 	await robot.rollWindow()
+// }
 
 
 var soldMap = {}
 var currentDate = null
-const setProductSoldRequestConfig = config["soldEnv"]["setProductSoldRequestConfig"]
+
 
 exports.parseSoldHistory = async(product,sold,lastId)=>{
     if ( sold.length === 0 ) return false;
@@ -69,17 +77,7 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
 
         if ( format !== currentDate ) {
             if ( lastId === null ) lastId = ""
-            console.log("时间",currentDate)
-            console.log("详情",soldMap)
-            await request({
-                url:setProductSoldRequestConfig["url"],
-                data:{
-                    product:JSON.stringify(product),
-                    sold:JSON.stringify(soldMap),
-                    lastId,
-                    createAt:currentDate,
-                }
-            })
+            await saveProductSold(product,lastId)
             if ( stopDateNum > formatNum ) {
                 currentDate = null
                 soldMap = {}
@@ -98,8 +96,79 @@ exports.parseSoldHistory = async(product,sold,lastId)=>{
     }
 
     return true
+}
+
+
+const saveProductSold  = async (product,lastId)=>{
+    let sku = product["sku"]
+    let productId = product["product_id"]
+    let soldNum = 0
+    let soldDetail = soldMap
+    let soldLastId = lastId
+    let createAt = currentDate
+
+    for ( let [size,num] of Object.entries(soldDetail) ) {
+        soldNum += num
+    }
+
+    let content = JSON.stringify({
+        "sku":sku,
+        "product_id":productId,
+        "sold_detail":JSON.stringify(soldDetail),
+        "sold_num":soldNum,
+        "sold_last_id":soldLastId,
+        "create_at":createAt,
+        "date_num":parseInt(moment(createAt).format("YYYYMMDD"))
+    })
+
+    let where = JSON.stringify({
+        "product_id":productId,
+        "create_at":createAt,
+    })
+
+    console.log()
+    console.log("------------------------------")
+    console.log("货号:",sku)
+    console.log("日期:",createAt)
+    console.log("lastId:",soldLastId)
+    console.log("总销量:",soldNum)
+    console.log("销量:",soldDetail)
+    console.log("------------------------------")
+    console.log()
+
+
+    let has = await request({
+        url:"/du/getSellProductDetail",
+        data:{
+            conditions:JSON.stringify({
+                raw:true,
+                attributes:['id'],
+                where:JSON.parse(where),
+            })
+        }
+    })
+
+    let hasData = has["data"]
+
+    if ( hasData.length === 0 ) {
+        await request({
+            url:"/du/createSellProductDetail",
+            data:{ content }
+        })
+        console.log("处理类型:创建")
+    } else {
+        await request({
+            url:"/du/updateSellProductDetail",
+            data:{ content, where }
+        })
+        console.log("处理类型:更新")
+    }
 
 }
+
+
+
+
 
 exports.getParseSignFunction = ()=>{
     return new Promise((res,rej)=>{

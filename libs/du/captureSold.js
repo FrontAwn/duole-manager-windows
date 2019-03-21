@@ -30,7 +30,6 @@ const getRequestUrl = async (productId,lastId=null)=>{
 }
 
 
-
 module.exports = async (options)=>{
 
 	getSign = await utils.getParseSignFunction()
