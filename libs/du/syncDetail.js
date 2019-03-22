@@ -145,7 +145,7 @@ module.exports = async ()=>{
 					content:JSON.stringify(chunk)
 				}
 			})
-			alreadySync += chunkLength
+			alreadySync += chunk.length
 			console.log(`${alreadySync}/${syncDatas.length}`)
 		}
 	} else {

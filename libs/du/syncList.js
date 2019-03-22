@@ -50,19 +50,19 @@ module.exports = async ()=>{
 		if ( !remoteList[id+''] ) {
 			newProduct.push(product)
 		}
-		if ( remoteList[id] && remoteList[id]["type"] !== type ) {
+		if ( remoteList[id+''] && remoteList[id]["type"] !== type ) {
 			changeProduct.push(product)
 		}
 	}
 	
-	newProduct = common.spliceArray(newProduct,10)
+	let newProductChunks = common.spliceArray(newProduct,5)
 
-	for ( let [idx,product] of newProduct.entries() ) {
+	for ( let [idx,chunk] of newProductChunks.entries() ) {
 		await request({
 			baseUrl:remoteBase,
 			url:"/du/createSellProductList",
 			data:{
-				content:JSON.stringify(product)
+				content:JSON.stringify(chunk)
 			}
 		})	
 	}
